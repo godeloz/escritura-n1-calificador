@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asistente de lectura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#FCFCFA; --hoja:#FFFFFF; --tinta:#1A1A18; --tinta-2:#55534C; --tinta-3:#8A877E;
+  --linea:#E4E1DA; --linea-2:#F0EEE8; --sel:#E6E3DB;
+  --ok:#15803D; --ok-b:#E8F5EC; --mal:#B91C1C; --mal-b:#FBECEC;
+  --r:6px; --cab:56px; --panel:420px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --papel:#16161A; --hoja:#1E1E23; --tinta:#ECEAE4; --tinta-2:#B5B2A9; --tinta-3:#85827A;
+    --linea:#34343B; --linea-2:#28282E; --sel:#3A3A42;
+    --ok:#4ADE80; --ok-b:#16301F; --mal:#F87171; --mal-b:#3A1C1C;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{overflow-x:clip}
+body{background:var(--papel);color:var(--tinta);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;color:inherit}
+input,textarea,select{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-0.01em}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid #1D4ED8;outline-offset:2px}
+
+/* ---------- botones ---------- */
+.btn{border:1px solid var(--linea);background:var(--hoja);padding:6px 12px;border-radius:var(--r);font-size:13px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--linea-2)}
+.btn.pri{background:var(--tinta);color:var(--papel);border-color:var(--tinta)}
+.btn.pri:disabled{opacity:.4;cursor:not-allowed}
+.btn.mini{padding:3px 8px;font-size:12px}
+.btn.fantasma{border-color:transparent;background:transparent}
+.btn.fantasma:hover{background:var(--linea-2)}
+.ico-ok,.ico-mal{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:10px;font-weight:700;flex:none;line-height:1}
+.ico-ok{background:var(--ok);color:#fff}
+.ico-mal{background:var(--mal);color:#fff}
+
+/* ---------- cabecera ---------- */
+header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(in srgb,var(--papel) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--linea);display:flex;align-items:center;gap:16px;padding:0 18px}
+.marca{font-weight:600;font-size:15px;white-space:nowrap;margin-right:auto}
+.total{display:flex;align-items:baseline;gap:8px}
+.total .cifra{font-family:"Source Serif 4",Georgia,serif;font-size:28px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.total .sobre{font-size:12px;color:var(--tinta-2);line-height:1.3}
+.acciones{display:flex;gap:6px;flex-wrap:nowrap}
+.aviso-lectura{background:var(--linea-2);border-bottom:1px solid var(--linea);padding:8px 18px;font-size:13px;color:var(--tinta-2)}
+
+/* ---------- entrada ---------- */
+#vEntrada{max-width:1100px;margin:0 auto;padding:28px 22px 60px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:34px}
+.intro h1{font-size:20px}
+.intro p{color:var(--tinta-2);margin:6px 0 20px;max-width:62ch}
+.campo{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.campo label{font-size:13px;font-weight:500}
+.campo .ayuda{font-size:12px;color:var(--tinta-3);font-weight:400}
+.campo textarea,.campo input{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:10px 12px;line-height:1.55}
+.campo textarea{min-height:300px;resize:vertical;font-family:"Source Serif 4",Georgia,serif;font-size:15.5px}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.material{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:10px 14px;margin:2px 0 16px}
+.material summary{cursor:pointer;font-size:13px;font-weight:500}
+.material .mat-sel{font-weight:400;color:var(--tinta-2)}
+.material[open] summary{margin-bottom:8px}
+.ayuda-mat{font-size:12.5px;color:var(--tinta-2);margin:0 0 12px;max-width:70ch}
+.campo textarea.corto{min-height:150px;font-family:Inter,sans-serif;font-size:13px}
+.campo select{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:9px 10px}
+.referencia{border-top:1px solid var(--linea);display:grid;grid-template-columns:1fr 1fr;gap:0}
+.ref-col{min-width:0;display:flex;flex-direction:column;max-height:38vh}
+.ref-col+.ref-col{border-left:1px solid var(--linea)}
+.ref-col h4{font-size:12px;color:var(--tinta-3);font-weight:500;padding:8px 18px 4px;display:flex;justify-content:space-between}
+.ref-txt{overflow:auto;padding:0 18px 12px;font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.6}
+.ref-txt p{margin:0 0 .7em}
+.ref-vacio{color:var(--tinta-3);font-family:Inter,sans-serif;font-size:12.5px}
+.ver-mat{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ver-mat .ref-txt{max-height:60vh;padding:0;border-top:1px solid var(--linea-2);padding-top:8px}
+.pie-entrada{display:flex;align-items:center;gap:14px;margin-top:4px}
+.contador{font-size:12.5px;color:var(--tinta-2)}
+.lateral h2{font-size:14px;margin-bottom:10px}
+.lateral p{font-size:12.5px;color:var(--tinta-2);margin:0 0 12px}
+.lista-ej{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
+.item-ej{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:9px 11px;text-align:left;display:flex;justify-content:space-between;gap:10px}
+.item-ej:hover{border-color:var(--tinta-3)}
+.item-ej small{color:var(--tinta-3);font-variant-numeric:tabular-nums}
+
+/* ---------- evaluación ---------- */
+#vEval{display:grid;grid-template-columns:minmax(0,1fr) var(--panel);align-items:start}
+#vEval.panel-cerrado{grid-template-columns:minmax(0,1fr) 56px}
+.zona-texto{min-width:0;border-right:1px solid var(--linea)}
+
+/* paleta */
+.paleta{position:sticky;top:var(--cab);z-index:30;background:var(--papel);border-bottom:1px solid var(--linea)}
+.pal-barra{display:flex;align-items:center;gap:6px;padding:8px 18px;flex-wrap:wrap}
+.filtros{display:flex;gap:2px;background:var(--linea-2);border-radius:999px;padding:2px}
+.filtros button{border:none;background:transparent;padding:4px 11px;border-radius:999px;font-size:12.5px;color:var(--tinta-2)}
+.filtros button.on{background:var(--hoja);color:var(--tinta);box-shadow:0 0 0 1px var(--linea)}
+.conteos{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--tinta-2);margin-left:6px;font-variant-numeric:tabular-nums}
+.conteos span{display:inline-flex;gap:4px;align-items:center}
+.pal-barra .der{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tinta-2);padding:0 6px}
+.pal-cuerpo{border-top:1px solid var(--linea);max-height:46vh;overflow:auto;padding:10px 18px 14px}
+.pal-sel{font-size:12.5px;color:var(--tinta-2);margin-bottom:8px;display:flex;gap:8px;align-items:baseline}
+.pal-sel q{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--tinta);font-size:13.5px}
+.franja{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.franja .lab{font-size:11.5px;color:var(--tinta-3);width:74px;flex:none}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cols[data-n="1"]{grid-template-columns:minmax(0,1fr)}
+.cols[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.col h4{font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px}
+.grupo{border-left:3px solid;padding-left:8px;margin-bottom:10px}
+.grupo .gt{font-size:11.5px;font-weight:600;margin-bottom:4px}
+.ev{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 5px;font-size:12.5px;line-height:1.3}
+.ev:hover{background:var(--hoja);border-color:var(--linea)}
+.ev .k{margin-left:auto;font-size:10.5px;color:var(--tinta-3);border:1px solid var(--linea);border-radius:3px;padding:0 4px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--linea);background:var(--hoja);border-radius:999px;padding:3px 10px 3px 5px;font-size:12.5px}
+.chip:hover{border-color:var(--tinta-3)}
+.chip .k{font-size:10.5px;color:var(--tinta-3)}
+.caracs{display:flex;gap:3px;flex-wrap:wrap;margin:2px 0 5px}
+.caracs button{border:1px solid var(--linea);background:transparent;border-radius:4px;padding:1px 6px;font-size:11px;color:var(--tinta-2)}
+.caracs button.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+.pal-vacia{font-size:12.5px;color:var(--tinta-3)}
+.pal-vacia kbd{border:1px solid var(--linea);border-radius:3px;padding:0 4px;font-size:11px}
+
+/* lienzo */
+.lienzo{max-width:72ch;margin:0 auto;padding:30px 30px 120px 56px;font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.8}
+.par{position:relative;margin:0 0 1.1em}
+.pil{position:absolute;left:-46px;top:3px;width:26px;height:26px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--tinta-3);font-family:Inter,sans-serif;font-size:13px;user-select:none;-webkit-user-select:none}
+.pil:hover,.pil.on{border-color:var(--linea);background:var(--hoja);color:var(--tinta)}
+.t{border-radius:2px}
+.t.m{cursor:pointer}
+.barra{position:absolute;top:6px;bottom:6px;width:6px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.num[data-m]{cursor:pointer}
+.t.s{background:var(--sel)}
+.t.sug{outline:1.5px dashed #B45309;outline-offset:1px;cursor:pointer}
+.t.tenue{opacity:.28}
+.punto{user-select:none;-webkit-user-select:none;font-family:Inter,sans-serif;font-weight:700;font-size:.8em;cursor:pointer;margin:0 1px;position:relative;top:-.15em}
+.num{user-select:none;-webkit-user-select:none;font-family:Inter,sans-serif;font-size:9.5px;color:var(--tinta-3);margin-left:1px;font-weight:500}
+.flash{animation:flash 1.1s ease}
+@keyframes flash{0%,40%{box-shadow:0 0 0 3px #FACC15}100%{box-shadow:0 0 0 0 transparent}}
+
+/* popover */
+.pop{position:absolute;z-index:40;width:330px;background:var(--hoja);border:1px solid var(--linea);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.16);padding:12px 13px;font-family:Inter,sans-serif;font-size:13px;line-height:1.45}
+.pop .cab-pop{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pop .cab-pop b{font-weight:600}
+.pop .cerrar{margin-left:auto}
+.pop .bloque{border-top:1px solid var(--linea-2);padding-top:9px;margin-top:9px}
+.pop .bloque:first-of-type{border-top:none;padding-top:0;margin-top:0}
+.pop label{display:block;font-size:11.5px;color:var(--tinta-3);margin:6px 0 2px}
+.pop select,.pop textarea{width:100%;border:1px solid var(--linea);border-radius:5px;background:var(--papel);padding:5px 7px;font-size:12.5px}
+.pop textarea{min-height:56px;resize:vertical}
+.pop .frag{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--tinta-2)}
+
+/* panel de rúbrica */
+.panel{position:sticky;top:var(--cab);height:calc(100vh - var(--cab));overflow:auto;background:var(--papel)}
+.panel-cab{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--linea);position:sticky;top:0;background:var(--papel);z-index:2}
+.panel-cab h2{font-size:13.5px}
+.panel-cab .btn{margin-left:auto}
+.panel-cuerpo{padding:14px 14px 80px}
+.desc{margin-bottom:22px}
+.desc-cab{display:flex;align-items:baseline;gap:8px;border-bottom:2px solid;padding-bottom:6px;margin-bottom:9px}
+.desc-cab h3{font-size:12.5px;line-height:1.35}
+.desc-cab .pt{margin-left:auto;font-size:12px;color:var(--tinta-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.crit{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);margin-bottom:7px}
+.crit.dest{animation:flash 1.1s ease}
+.crit-cab{display:flex;align-items:center;gap:8px;width:100%;border:none;background:transparent;padding:10px 11px 6px;text-align:left}
+.crit-cab .nom{font-size:13px;font-weight:500;line-height:1.35}
+.crit-cab .cnt{margin-left:auto;display:flex;gap:7px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--tinta-2);flex:none}
+.crit-cab .cnt span{display:inline-flex;align-items:center;gap:3px}
+.crit-cab .flecha{color:var(--tinta-3);font-size:11px;width:10px;flex:none;transition:transform .15s}
+.crit.abierto .flecha{transform:rotate(90deg)}
+.sugerido{padding:0 11px 7px 29px;font-size:12px;color:var(--tinta-2);line-height:1.45}
+.sugerido b{color:var(--tinta);font-weight:600}
+.niveles{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 11px 10px 29px}
+.niv{border:1px solid var(--linea);background:var(--papel);border-radius:4px;padding:4px 2px;font-size:11px;line-height:1.25;color:var(--tinta-2);display:flex;flex-direction:column;align-items:center}
+.niv small{font-size:10.5px;color:var(--tinta-3);font-variant-numeric:tabular-nums}
+.niv.sug{border-style:dashed;border-color:var(--tinta-3)}
+.niv.act{color:#fff;font-weight:600}
+.niv.act small{color:rgba(255,255,255,.85)}
+.niv:disabled{cursor:default}
+.crit-det{padding:0 11px 11px 29px;font-size:12.5px}
+.decidido{padding:0 11px 11px 29px}
+.dec-cab{display:flex;gap:8px;align-items:baseline;font-size:12.5px;margin-bottom:3px}
+.dec-cab span{font-variant-numeric:tabular-nums}
+.decidido p{margin:0;font-size:12.5px;line-height:1.5;color:var(--tinta-2)}
+.crit-det .descr{color:var(--tinta-2);line-height:1.5;margin-bottom:8px}
+.evis{list-style:none;margin:0 0 8px;padding:0}
+.evis li{border-top:1px solid var(--linea-2);padding:6px 0}
+.evis .fila{display:flex;gap:7px;align-items:flex-start;cursor:pointer}
+.evis .fila .n{font-size:11px;color:var(--tinta-3);min-width:18px;text-align:right;padding-top:1px}
+.evis .fila q{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--tinta-2);font-size:13px}
+.evis .coment{font-size:12px;color:var(--tinta-2);margin:3px 0 0 41px}
+.evis textarea{width:calc(100% - 41px);margin:5px 0 0 41px;border:1px solid var(--linea);border-radius:5px;background:var(--papel);padding:5px 7px;font-size:12.5px;min-height:50px}
+.acc-crit{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.desvio{margin-top:8px}
+.desvio label{font-size:11.5px;color:var(--tinta-3)}
+.desvio textarea{width:100%;border:1px solid var(--linea);border-radius:5px;background:var(--papel);padding:5px 7px;font-size:12.5px;min-height:44px}
+.car-est{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin:4px 0 8px;font-size:12px}
+.car-est span b{font-weight:600}
+
+.bloque-rec{border-top:1px solid var(--linea);padding-top:14px;margin-top:6px}
+.bloque-rec h3{font-size:13.5px;margin-bottom:4px}
+.bloque-rec h4{font-size:12px;color:var(--tinta-3);font-weight:500;margin:12px 0 6px}
+.rec{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--linea-2);font-size:12.5px;line-height:1.55}
+.rec input{margin-top:3px}
+.rec .rt b{display:block;font-weight:600;margin-bottom:1px}
+.rec.fuera .rt{opacity:.45}
+.obs textarea{width:100%;min-height:110px;border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:9px 11px;line-height:1.55}
+
+/* franja del panel cerrado */
+.franja-panel{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0}
+.franja-panel .fp{width:40px;border-radius:5px;padding:4px 0;text-align:center;font-size:10.5px;line-height:1.25;border-left:3px solid;background:var(--hoja);cursor:pointer}
+.franja-panel .fp b{display:block;font-size:11px}
+
+/* modales */
+.velo{position:fixed;inset:0;background:rgba(20,20,18,.38);z-index:80;display:flex;align-items:flex-start;justify-content:center;padding:44px 18px;overflow:auto}
+.modal{background:var(--papel);border-radius:10px;max-width:720px;width:100%;padding:22px 24px;box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.modal h2{font-size:16px;margin-bottom:6px}
+.modal>p{color:var(--tinta-2);font-size:13px;margin:0 0 16px;max-width:64ch}
+.modal-pie{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.modal .campo input{width:100%}
+.hist{width:100%;border-collapse:collapse;font-size:13px}
+.hist th{text-align:left;font-weight:500;color:var(--tinta-3);font-size:12px;padding:6px;border-bottom:1px solid var(--linea)}
+.hist td{padding:7px 6px;border-bottom:1px solid var(--linea-2);vertical-align:middle}
+.hist td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hist .vacio{color:var(--tinta-3);text-align:center;padding:20px}
+.vis{font-size:11.5px;border-radius:999px;padding:1px 8px;border:1px solid var(--linea);background:transparent}
+.vis.pub{background:var(--ok-b);border-color:var(--ok);color:var(--ok)}
+.regla{display:grid;grid-template-columns:1fr 76px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--linea-2);font-size:13px}
+.regla span{color:var(--tinta-2)}
+.regla input{width:100%;border:1px solid var(--linea);border-radius:4px;padding:4px 7px;text-align:right;background:var(--hoja)}
+.alerta{border-left:3px solid var(--mal);background:var(--mal-b);padding:9px 12px;border-radius:4px;font-size:12.5px;margin:10px 0}
+.nota{border-left:3px solid var(--linea);padding:4px 12px;font-size:12.5px;color:var(--tinta-2);margin:10px 0}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--tinta);color:var(--papel);padding:9px 16px;border-radius:8px;font-size:13px;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+
+/* ---------- móvil ---------- */
+#btnPanelMovil{display:none}
+@media (max-width:900px){
+  #vEntrada{grid-template-columns:1fr}
+  .fila2{grid-template-columns:1fr}
+  header{gap:8px;padding:0 10px}
+  .marca{display:none}
+  .total{margin-right:auto}
+  .acciones{margin-left:auto}
+  .acciones .opcional,.largo{display:none}
+  .acciones{gap:4px}
+  .acciones .btn{padding:6px 9px}
+  .total .cifra{font-size:22px}
+  .total .sobre{font-size:11px}
+  .pal-barra{padding:6px 10px}
+  .pal-barra .der{margin-left:0}
+  .chk{padding:0 3px}
+  #vEval,#vEval.panel-cerrado{grid-template-columns:1fr}
+  .zona-texto{border-right:none}
+  .lienzo{padding:22px 18px 140px 44px;font-size:16.5px}
+  .pil{left:-42px}
+  .chk,#bFijar{display:none}
+  .toast{bottom:76px}
+  .panel{position:fixed;left:0;right:0;bottom:0;top:auto;height:78vh;z-index:60;border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);transform:translateY(105%);transition:transform .2s}
+  .panel.abierto-movil{transform:none}
+  #btnPanelMovil{display:block;position:fixed;right:14px;bottom:14px;z-index:55;border-radius:999px;padding:10px 16px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+  .pal-cuerpo{position:fixed;left:0;right:0;bottom:0;max-height:62vh;background:var(--papel);border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);z-index:58}
+  .cols,.cols[data-n]{grid-template-columns:minmax(0,1fr)}
+  .referencia,.ver-mat{grid-template-columns:1fr}
+  .ref-col{max-height:26vh}
+  .ref-col+.ref-col{border-left:none;border-top:1px solid var(--linea)}
+  .pop{width:auto;left:10px!important;right:10px}
+  .franja-panel{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- impresión ---------- */
+#impresion{display:none}
+@media print{
+  @page{size:letter;margin:2cm}
+  body{background:#fff;color:#111}
+  body>*:not(#impresion){display:none!important}
+  #impresion{display:block;font-family:Inter,sans-serif;font-size:10.5pt;line-height:1.45;color:#111}
+  #impresion *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #impresion h1{font-size:16pt;margin-bottom:4pt}
+  #impresion h2{font-size:12pt;margin:18pt 0 6pt;border-bottom:1px solid #999;padding-bottom:3pt;break-after:avoid}
+  #impresion h3{font-size:10.5pt;margin:10pt 0 3pt;break-after:avoid}
+  #impresion .meta{color:#555;font-size:9.5pt}
+  #impresion .texto-imp{font-family:"Source Serif 4",Georgia,serif;font-size:11pt;line-height:1.75}
+  #impresion .texto-imp p{margin:0 0 8pt}
+  #impresion .num{font-size:7pt;color:#333;font-weight:600}
+  #impresion table{width:100%;border-collapse:collapse;font-size:9.5pt;break-inside:auto}
+  #impresion td,#impresion th{border-bottom:1px solid #ccc;padding:4pt 5pt;text-align:left;vertical-align:top}
+  #impresion td.n{text-align:right;white-space:nowrap}
+  #impresion tr{break-inside:avoid}
+  #impresion .ev-imp{margin:2pt 0 2pt 12pt;font-size:9.5pt}
+  #impresion .rec-imp{margin:0 0 6pt;break-inside:avoid}
+  #impresion .adv{border:1px solid #B91C1C;color:#B91C1C;padding:4pt 7pt;margin:6pt 0;font-size:9.5pt}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">Asistente de lectura</div>
+  <div class="total" id="cabTotal" hidden>
+    <div class="cifra" id="cifra">0,00</div>
+    <div class="sobre" id="sobre"></div>
+  </div>
+  <div class="acciones" id="acciones">
+    <button class="btn" id="bGuardar" hidden>Guardar<span class="largo"> evaluación</span></button>
+    <button class="btn" id="bPdf" hidden>PDF</button>
+    <button class="btn" id="bHistorial">Historial</button>
+    <button class="btn opcional" id="bUmbrales">Umbrales</button>
+    <button class="btn opcional" id="bNueva" hidden>Nueva</button>
+  </div>
+</header>
+<div class="aviso-lectura" id="avisoLectura" hidden></div>
+
+<main>
+  <section id="vEntrada">
+    <div>
+      <div class="intro">
+        <h1>Evaluar un texto</h1>
+        <p>Pega el texto del estudiante. Si viene de un PDF con saltos de línea a mitad de frase, se unen solos antes de evaluar.</p>
+      </div>
+      <div class="campo">
+        <label for="inTexto">Texto del estudiante</label>
+        <textarea id="inTexto" placeholder="Pega aquí el texto que vas a calificar."></textarea>
+      </div>
+      <div class="fila2">
+        <div class="campo">
+          <label for="inEstudiante">Nombre del estudiante <span class="ayuda">— privado, nunca se publica</span></label>
+          <input type="text" id="inEstudiante" autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="inEtiqueta">Etiqueta pública <span class="ayuda">— solo si la vas a publicar</span></label>
+          <input type="text" id="inEtiqueta" placeholder="Por ejemplo: Ejemplo 4" autocomplete="off">
+        </div>
+      </div>
+      <details class="material" id="detMaterial">
+        <summary>Texto base y resumen de la IA <span class="ayuda">— opcional</span> <span class="mat-sel" id="matSel"></span></summary>
+        <p class="ayuda-mat">Los que se entregaron en el examen. Se guardan una vez como prueba y se reutilizan para los demás estudiantes del mismo simulacro. Mientras marcas, se consultan con el botón <b>Texto base</b>.</p>
+        <div class="fila2">
+          <div class="campo">
+            <label for="inMaterial">Prueba</label>
+            <select id="inMaterial"></select>
+          </div>
+          <div class="campo">
+            <label for="inMatTitulo">Nombre de la prueba</label>
+            <input type="text" id="inMatTitulo" placeholder="Por ejemplo: Fuerza de voluntad, simulacro 2" autocomplete="off">
+          </div>
+        </div>
+        <div class="fila2">
+          <div class="campo">
+            <label for="inFuente">Texto base</label>
+            <textarea id="inFuente" class="corto" placeholder="Pega el texto fuente del examen."></textarea>
+          </div>
+          <div class="campo">
+            <label for="inResumen">Resumen de la IA</label>
+            <textarea id="inResumen" class="corto" placeholder="Pega el resumen que el estudiante debía valorar."></textarea>
+          </div>
+        </div>
+      </details>
+      <div class="pie-entrada">
+        <button class="btn pri" id="bEvaluar" disabled>Evaluar texto</button>
+        <span class="contador" id="contador">0 palabras · 0 párrafos</span>
+      </div>
+    </div>
+    <aside class="lateral">
+      <div id="bloqueDesbloquear" hidden>
+        <h2>Historial completo</h2>
+        <p>Esta página guarda un historial cifrado. Con la contraseña se abre y se une al de este navegador.</p>
+        <button class="btn" id="bDesbloquear" style="margin-bottom:24px">Desbloquear historial</button>
+      </div>
+      <div id="bloqueEjemplos" hidden>
+        <h2>Evaluaciones de ejemplo</h2>
+        <p>Textos evaluados con esta herramienta, publicados sin datos de sus autores.</p>
+        <div class="lista-ej" id="listaEjemplos"></div>
+      </div>
+      <div id="bloqueRecientes" hidden>
+        <h2>Tus evaluaciones recientes</h2>
+        <div class="lista-ej" id="listaRecientes"></div>
+      </div>
+    </aside>
+  </section>
+
+  <section id="vEval" hidden>
+    <div class="zona-texto">
+      <div class="paleta" id="paleta">
+        <div class="pal-barra">
+          <div class="filtros" id="filtros" role="group" aria-label="Filtrar paleta">
+            <button data-f="todo" class="on">Todo</button>
+            <button data-f="correccion">Corrección</button>
+            <button data-f="cohesion">Cohesión</button>
+            <button data-f="contenido">Contenido</button>
+          </div>
+          <div class="conteos"><span><i class="ico-ok">✓</i><b id="cOk">0</b></span><span><i class="ico-mal">✕</i><b id="cMal">0</b></span></div>
+          <div class="der">
+            <button class="btn mini fantasma" id="bDeshacer" title="Deshacer (Ctrl+Z)">Deshacer</button>
+            <button class="btn mini" id="bReferencia" hidden>Texto base</button>
+            <button class="btn mini" id="bSugerir">Sugerir marcadores</button>
+            <label class="chk"><input type="checkbox" id="chkNum" checked> Números</label>
+            <label class="chk"><input type="checkbox" id="chkMarcas" checked> Marcas</label>
+            <button class="btn mini fantasma" id="bFijar" title="Mantener la paleta abierta">Abrir paleta</button>
+          </div>
+        </div>
+        <div class="referencia" id="referencia" hidden></div>
+        <div class="pal-cuerpo" id="palCuerpo" hidden></div>
+      </div>
+      <div style="position:relative">
+        <article class="lienzo" id="lienzo" aria-label="Texto del estudiante"></article>
+        <div class="pop" id="pop" hidden></div>
+      </div>
+    </div>
+    <aside class="panel" id="panel" aria-label="Rúbrica"></aside>
+    <button class="btn pri" id="btnPanelMovil">Rúbrica</button>
+  </section>
+</main>
+
+<div id="impresion"></div>
+
+<!--PUB-INI--><script type="application/json" id="datos-publicos">[]</script><!--PUB-FIN-->
+<!--CIF-INI--><script type="application/json" id="datos-cifrados">null</script><!--CIF-FIN-->
+
+<script>
+"use strict";
+/* Primera instrucción del programa: se copia el documento tal como llegó,
+   antes de pintar nada. Es la plantilla del archivo de historial. */
+const FUENTE = (typeof document!=="undefined" && document.documentElement)
+  ? "<!DOCTYPE html>\n"+document.documentElement.outerHTML : "";
+
+/* =========================================================================
+   1. DATOS
+   ========================================================================= */
+const FAMILIAS = {
+  D1:{nom:"Adapta el texto a la situación comunicativa.", color:"#1D4ED8", rgb:"29,78,216", corto:"Situación comunicativa"},
+  D2:{nom:"Mantiene la continuidad entre las ideas mediante mecanismos de cohesión textual.", color:"#B45309", rgb:"180,83,9", corto:"Cohesión"},
+  D3:{nom:"Organiza las partes del texto de manera que sean coherentes entre sí.", color:"#6D28D9", rgb:"109,40,217", corto:"Organización"},
+  D4:{nom:"Redacta textos con corrección gramatical.", color:"#BE185D", rgb:"190,24,93", corto:"Corrección gramatical"}
+};
+const NIVELES = ["experto","avanzado","intermedio","inicial"];
+const NOMNIV = {experto:"Experto", avanzado:"Avanzado", intermedio:"Intermedio", inicial:"Inicial"};
+
+const RUBRICA = [
+{id:"c1", fam:"D1", corto:"Postura", nom:"Formula una postura clara frente al tema propuesto de acuerdo con el propósito comunicativo.",
+ pts:{experto:0.5, avanzado:0.33, intermedio:0.17, inicial:0},
+ d:{experto:"El texto presenta, desde el párrafo introductorio, una postura explícita y comprensible sobre la calidad del resumen producido por IA. La postura formula un juicio de valor claro que orienta el desarrollo posterior del texto.",
+    avanzado:"El texto presenta una postura explícita y comprensible sobre la calidad del resumen producido por IA, pero esta aparece en una parte distinta del párrafo introductorio. La postura expresa un juicio de valor reconocible sobre el resumen.",
+    intermedio:"El texto permite inferir una postura sobre la calidad del resumen producido por IA, pero el juicio de valor no está formulado de manera explícita. La posición del autor se reconoce parcialmente a partir de valoraciones o comentarios dispersos.",
+    inicial:"El texto no permite establecer una postura sobre la calidad del resumen producido por IA. No se identifica un juicio de valor comprensible a lo largo de la lectura."}},
+{id:"c2", fam:"D1", corto:"Justificación", nom:"Justifica su postura mediante razones de acuerdo con los criterios del género.",
+ pts:{experto:1, avanzado:0.66, intermedio:0.33, inicial:0},
+ d:{experto:"Justifica su postura mediante razones explícitas, desarrolladas y pertinentes sobre la calidad del resumen producido por IA. Las razones se relacionan con las cuatro características del buen resumen —idea principal, análisis de la estructura, fidelidad y estrategias discursivas— y se sustentan con evidencias textuales tanto del texto fuente como del resumen producido por IA.",
+    avanzado:"Justifica su postura mediante razones explícitas sobre la calidad del resumen producido por IA. Las razones se relacionan con las cuatro características del buen resumen, pero una o dos presentan un desarrollo parcial: explicación insuficiente o evidencias textuales poco pertinentes del texto fuente o del resumen producido por IA.",
+    intermedio:"Justifica su postura mediante razones explícitas sobre la calidad del resumen producido por IA. Las razones mencionan las cuatro características del buen resumen, pero tres o cuatro presentan un desarrollo parcial: una explicación insuficiente o evidencias textuales poco pertinentes del texto fuente o del resumen producido por IA.",
+    inicial:"Presenta una justificación débil o poco pertinente de su postura sobre la calidad del resumen producido por IA. Las razones se formulan al margen de las cuatro características del buen resumen o se limitan a comentarios generales sin una relación clara con estos criterios."}},
+{id:"c3", fam:"D1", corto:"Léxico", nom:"Usa un léxico adecuado al nivel de formalidad del texto.",
+ pts:{experto:0.3, avanzado:0.2, intermedio:0.1, inicial:0},
+ d:{experto:"El texto mantiene un registro formal de manera consistente. Usa vocabulario preciso y pertinente para valorar la calidad del resumen producido por IA.",
+    avanzado:"El texto mantiene, en general, un registro formal. Usa vocabulario pertinente para valorar la calidad del resumen producido por IA, aunque algunas elecciones léxicas son menos precisas. La formalidad se conserva a lo largo del texto.",
+    intermedio:"El texto mantiene parcialmente el registro formal. Usa vocabulario relacionado con la valoración del resumen producido por IA, pero varias elecciones léxicas son vagas o poco precisas. La formalidad del texto se debilita en algunos fragmentos.",
+    inicial:"El texto presenta un registro predominantemente informal. Usa vocabulario poco pertinente para valorar la calidad del resumen producido por IA e incorpora expresiones coloquiales o muletillas que afectan la formalidad del texto."}},
+{id:"c4", fam:"D1", corto:"Extensión", nom:"Adecúa la extensión del texto a la situación comunicativa.",
+ pts:{experto:0.2, avanzado:0.13, intermedio:0.07, inicial:0},
+ d:{experto:"El texto ajusta su extensión al rango establecido de 350 a 400 palabras.",
+    avanzado:"El texto presenta una extensión de 320 a 349 palabras o de 401 a 430 palabras.",
+    intermedio:"El texto presenta una extensión de 290 a 319 palabras o de 431 a 460 palabras",
+    inicial:"El texto presenta menos de 290 palabras o más de 460 palabras."}},
+{id:"c5", fam:"D2", corto:"Puntuación", nom:"Organiza las ideas mediante el uso de los signos de puntuación de acuerdo con la norma.",
+ pts:{experto:0.3, avanzado:0.2, intermedio:0.1, inicial:0},
+ d:{experto:"Organiza las ideas del texto mediante un uso adecuado y consistente de los signos de puntuación. La puntuación segmenta correctamente las oraciones y establece relaciones entre las ideas, lo que favorece una lectura fluida y una comprensión clara del texto.",
+    avanzado:"Organiza las ideas del texto mediante un uso adecuado de los signos de puntuación. Aunque presenta algunos errores en la segmentación de las oraciones, estos no afectan la comprensión del texto.",
+    intermedio:"La puntuación afecta la organización de algunas partes del texto. Los errores en la segmentación de las oraciones y en la relación entre las ideas obligan a releer algunos fragmentos para comprenderlos.",
+    inicial:"Los errores recurrentes de puntuación afectan la segmentación de las oraciones y la relación entre las ideas, de manera que la relectura no es suficiente para comprender varias partes del texto."}},
+{id:"c6", fam:"D2", corto:"Marcadores discursivos", nom:"Enlaza ideas, oraciones y párrafos mediante marcadores discursivos.",
+ pts:{experto:0.35, avanzado:0.23, intermedio:0.12, inicial:0},
+ d:{experto:"El texto enlaza ideas, oraciones y párrafos mediante marcadores discursivos pertinentes y diversos de manera consistente. Estos recursos permiten al lector identificar las relaciones lógicas y comprender el sentido global del texto.",
+    avanzado:"El texto enlaza ideas, oraciones y párrafos mediante marcadores discursivos pertinentes de manera consistente. Estos permiten al lector identificar las relaciones lógicas principales y comprender el sentido global del texto, aunque algunas reiteraciones reducen su fluidez.",
+    intermedio:"El texto enlaza ideas, oraciones y párrafos mediante marcadores discursivos, aunque de manera inconsistente. Varias relaciones se expresan mediante marcadores repetitivos o poco pertinentes, lo que obliga a releer ciertos fragmentos para comprender la conexión entre las ideas.",
+    inicial:"El texto presenta dificultades para enlazar ideas, oraciones y párrafos mediante marcadores discursivos pertinentes y diversos. Esto dificulta identificar las relaciones lógicas y comprender la continuidad del texto."}},
+{id:"c7", fam:"D2", corto:"Relaciones léxicas y sintácticas", nom:"Enlaza ideas, oraciones y párrafos mediante relaciones léxicas y sintácticas.",
+ pts:{experto:0.35, avanzado:0.23, intermedio:0.12, inicial:0},
+ d:{experto:"El texto mantiene la continuidad entre ideas y elementos ya mencionados mediante el uso preciso de relaciones léxicas y sintácticas que evitan repeticiones innecesarias. Estos recursos permiten seguir el desarrollo del texto con fluidez y reconocer la relación entre sus partes.",
+    avanzado:"El texto mantiene la continuidad mediante relaciones léxicas y sintácticas precisas en la mayoría de los casos. Aunque presenta algunas repeticiones innecesarias, estas no impiden seguir el desarrollo del texto con fluidez ni reconocer la relación entre sus partes.",
+    intermedio:"La continuidad del texto presenta algunas dificultades debido al uso poco preciso de las relaciones léxicas y sintácticas. Las repeticiones innecesarias recurrentes impiden seguir el desarrollo del texto con fluidez, por lo que es necesaria una relectura para comprenderlo.",
+    inicial:"El texto presenta relaciones léxicas y sintácticas imprecisas, acompañadas de repeticiones innecesarias recurrentes. Estas dificultades impiden seguir el desarrollo del texto con fluidez y reconocer la relación entre sus partes."}},
+{id:"c8", fam:"D3", corto:"Progresión temática", nom:"Organiza la información siguiendo una progresión temática.",
+ pts:{experto:0.7, avanzado:0.46, intermedio:0.23, inicial:0},
+ d:{experto:"Organiza la información en una secuencia en la que cada parte retoma la anterior y aporta nueva información. La comprensión del texto se logra porque este desarrolla el tema sin saltos, repeticiones innecesarias ni cambios abruptos de foco.",
+    avanzado:"La organización de la información presenta saltos temáticos, repeticiones innecesarias o cambios de foco en la secuencia del texto, pero estos no afectan la comprensión general.",
+    intermedio:"La organización de la información presenta saltos temáticos, repeticiones innecesarias o cambios abruptos de foco en la secuencia del texto, los cuales obligan a releerlo para comprenderlo.",
+    inicial:"La organización de la información presenta saltos temáticos, repeticiones innecesarias o cambios abruptos de foco con tal recurrencia que impiden comprender el texto."}},
+{id:"c9", fam:"D3", corto:"Párrafos diferenciados", nom:"Desarrolla el texto mediante párrafos diferenciados según su función.",
+ pts:{experto:0.3, avanzado:0.2, intermedio:0.1, inicial:0},
+ d:{experto:"Desarrolla el texto mediante al menos tres párrafos diferenciados según su función: apertura, desarrollo y cierre.",
+    avanzado:"Desarrolla el texto mediante al menos tres párrafos, pero uno de ellos no cumple su función.",
+    intermedio:"Desarrolla el texto mediante al menos tres párrafos, pero dos de ellos no cumplen su función.",
+    inicial:"El texto presenta menos de tres párrafos o ninguno de los párrafos presentados cumple su función."}},
+{id:"c10", fam:"D4", corto:"Acentuación", nom:"Aplica las normas de acentuación en la escritura de palabras.",
+ pts:{experto:0.25, avanzado:0.17, intermedio:0.08, inicial:0},
+ d:{experto:"El texto aplica de manera consistente las normas de acentuación en los distintos usos de la tilde, lo que facilita la fluidez de la lectura.",
+    avanzado:"El texto aplica, en general, las normas de acentuación. Presenta fallas puntuales y no sistemáticas, sin evidenciar un desconocimiento sostenido de una regla. La corrección global y la fluidez de la lectura se mantienen.",
+    intermedio:"El texto presenta errores recurrentes en una misma norma de acentuación. Esta recurrencia afecta la corrección del texto y evidencia vacilación en la aplicación de las normas.",
+    inicial:"El texto presenta errores frecuentes o sistemáticos de acentuación. Las fallas evidencian dificultades para aplicar las normas básicas. Esta situación compromete la corrección general y genera interrupciones reiteradas durante la lectura."}},
+{id:"c11", fam:"D4", corto:"Ortografía", nom:"Aplica correctamente las normas ortográficas.",
+ pts:{experto:0.3, avanzado:0.2, intermedio:0.1, inicial:0},
+ d:{experto:"El texto aplica de manera consistente las normas ortográficas en la escritura de las palabras, lo que facilita la fluidez de la lectura.",
+    avanzado:"El texto aplica, en general, las normas ortográficas. Presenta fallas puntuales y no sistemáticas en palabras específicas, en el uso de mayúsculas o en la unión o separación de palabras. Estas fallas no comprometen la corrección global ni la fluidez de la lectura.",
+    intermedio:"El texto presenta errores ortográficos recurrentes en una misma regla. Esta recurrencia afecta la corrección del texto y evidencia vacilación en la aplicación de las normas.",
+    inicial:"El texto presenta errores ortográficos frecuentes o sistemáticos que evidencian dificultades para aplicar las normas básicas. Esta situación compromete la corrección general y genera interferencias reiteradas durante la lectura."}},
+{id:"c12", fam:"D4", corto:"Gramática", nom:"Emplea oraciones gramaticalmente correctas según la norma.",
+ pts:{experto:0.45, avanzado:0.3, intermedio:0.15, inicial:0},
+ d:{experto:"El texto construye oraciones completas y gramaticalmente correctas de manera consistente. Mantiene la concordancia, el uso normativo de tiempos verbales, preposiciones y pronombres, y un orden sintáctico que permite reconocer con claridad la relación entre los elementos de la oración.",
+    avanzado:"El texto construye, en general, oraciones completas y gramaticalmente correctas. Presenta fallas puntuales y no sistemáticas de concordancia, tiempos verbales, preposiciones, pronombres u orden sintáctico, pero estas no comprometen la comprensión ni la fluidez de la lectura.",
+    intermedio:"El texto presenta errores gramaticales recurrentes. Las fallas se repiten en una misma estructura. Esta recurrencia obliga a releer algunos fragmentos para comprenderlos.",
+    inicial:"El texto presenta errores gramaticales frecuentes o sistemáticos. Las fallas afectan la construcción de varias oraciones y dificultan reconocer la relación entre sus elementos. Esta situación compromete la claridad y la comprensión de partes importantes del texto."}}
+];
+const MAXTOTAL = RUBRICA.reduce((a,c)=>a+c.pts.experto,0);
+const CRIT = {}; RUBRICA.forEach(c=>CRIT[c.id]=c);
+
+const CARACTERISTICAS = [
+  {id:"ideaPrincipal", nom:"Idea principal", art:"la idea principal"},
+  {id:"estructura", nom:"Estructura", art:"la estructura"},
+  {id:"fidelidad", nom:"Fidelidad", art:"la fidelidad"},
+  {id:"estrategias", nom:"Estrategias discursivas", art:"las estrategias discursivas"}
+];
+const CARAC = {}; CARACTERISTICAS.forEach(c=>CARAC[c.id]=c);
+
+/* Secciones de lectura. Organizan la paleta; nunca la esconden salvo que el
+   evaluador active el filtro. */
+const SECCIONES = [
+  {id:"correccion", nom:"Corrección", crits:["c10","c11","c12","c5"]},
+  {id:"cohesion",   nom:"Cohesión",   crits:["c6","c7"]},
+  {id:"contenido",  nom:"Contenido",  crits:["c1","c2","c3","c8","c9"]}
+];
+
+/* Catálogo de evidencias.
+   pol:   "+" acierto · "-" error
+   ancla: "sel" la selección tal cual · "parrafo" el párrafo entero ·
+          "punto" un punto al final de la selección · "inicio" un punto al
+          inicio del párrafo
+   tam:   tamaños de selección para los que se sugiere
+   grav:  escala de gravedad, si aplica
+   doc:   documental: se registra, no mueve la sugerencia
+   carac: exige elegir característica */
+const CATALOGO = [
+ {id:"c1.explicita",   crit:"c1", pol:"+", nom:"Postura explícita",                     ancla:"sel", tam:["frase","parrafo"]},
+ {id:"c1.implicita",   crit:"c1", pol:"-", nom:"Postura implícita",                     ancla:"sel", tam:["frase","parrafo"]},
+ {id:"c1.contradictoria",crit:"c1",pol:"-", nom:"Valoración contradictoria",            ancla:"sel", tam:["frase"]},
+ {id:"c1.ausente",     crit:"c1", pol:"-", nom:"Postura no identificable",              general:true},
+ {id:"c2.desarrollada",crit:"c2", pol:"+", nom:"Razón desarrollada con doble cita",     ancla:"sel", tam:["frase","parrafo"], carac:true},
+ {id:"c2.enunciada",   crit:"c2", pol:"-", nom:"Razón solo enunciada",                  ancla:"sel", tam:["frase","parrafo"], carac:true},
+ {id:"c2.sinevidencia",crit:"c2", pol:"-", nom:"Sin evidencia textual",                 ancla:"sel", tam:["frase","parrafo"], carac:true},
+ {id:"c2.unafuente",   crit:"c2", pol:"-", nom:"Cita de una sola fuente",               ancla:"sel", tam:["frase","parrafo"], carac:true},
+ {id:"c2.pocopertinente",crit:"c2",pol:"-", nom:"Evidencia poco pertinente",            ancla:"sel", tam:["frase"], carac:true},
+ {id:"c2.margen",      crit:"c2", pol:"-", nom:"Comentario al margen de las características", ancla:"sel", tam:["frase","parrafo"]},
+ {id:"c2.ausente",     crit:"c2", pol:"-", nom:"Característica ausente",                general:true, carac:true},
+ {id:"c3.preciso",     crit:"c3", pol:"+", nom:"Término preciso",                       ancla:"sel", tam:["palabra"], doc:true},
+ {id:"c3.coloquial",   crit:"c3", pol:"-", nom:"Coloquialismo o muletilla",             ancla:"sel", tam:["palabra","frase"]},
+ {id:"c3.vago",        crit:"c3", pol:"-", nom:"Término vago",                          ancla:"sel", tam:["palabra"]},
+ {id:"c3.impropio",    crit:"c3", pol:"-", nom:"Palabra con sentido impropio",          ancla:"sel", tam:["palabra"]},
+ {id:"c5.falta",       crit:"c5", pol:"-", nom:"Falta signo",                           ancla:"punto", tam:["hueco","palabra"], grav:"punt", gdef:"leve"},
+ {id:"c5.sobra",       crit:"c5", pol:"-", nom:"Signo sobrante",                        ancla:"sel", tam:["signo"], grav:"punt", gdef:"leve"},
+ {id:"c5.sujetoverbo", crit:"c5", pol:"-", nom:"Coma entre sujeto y verbo",             ancla:"sel", tam:["signo"], grav:"punt", gdef:"grave"},
+ {id:"c5.fusionadas",  crit:"c5", pol:"-", nom:"Oraciones fusionadas",                  ancla:"sel", tam:["signo","frase"], grav:"punt", gdef:"grave"},
+ {id:"c5.equivocado",  crit:"c5", pol:"-", nom:"Signo equivocado",                      ancla:"sel", tam:["signo"], grav:"punt", gdef:"leve"},
+ {id:"c6.pertinente",  crit:"c6", pol:"+", nom:"Marcador pertinente",                   ancla:"sel", tam:["palabra","frase"]},
+ {id:"c6.relacion",    crit:"c6", pol:"-", nom:"Relación lógica equivocada",            ancla:"sel", tam:["palabra","frase"]},
+ {id:"c6.reiterado",   crit:"c6", pol:"-", nom:"Marcador reiterado",                    ancla:"sel", tam:["palabra","frase"]},
+ {id:"c6.transicion",  crit:"c6", pol:"-", nom:"Falta transición entre párrafos",       ancla:"inicio", tam:["parrafo"]},
+ {id:"c6.yuxtapuestas",crit:"c6", pol:"-", nom:"Ideas yuxtapuestas",                    ancla:"sel", tam:["frase"]},
+ {id:"c7.sustitucion", crit:"c7", pol:"+", nom:"Sustitución eficaz",                    ancla:"sel", tam:["palabra"], doc:true},
+ {id:"c7.repeticion",  crit:"c7", pol:"-", nom:"Repetición innecesaria",                ancla:"sel", tam:["palabra"]},
+ {id:"c7.ambiguo",     crit:"c7", pol:"-", nom:"Referente ambiguo",                     ancla:"sel", tam:["palabra","frase"]},
+ {id:"c8.avanza",      crit:"c8", pol:"+", nom:"Retoma y aporta información nueva",     ancla:"sel", tam:["frase","parrafo"], doc:true},
+ {id:"c8.salto",       crit:"c8", pol:"-", nom:"Salto temático",                        ancla:"sel", tam:["frase","parrafo"], grav:"prog", gdef:"no-afecta"},
+ {id:"c8.repite",      crit:"c8", pol:"-", nom:"Repite contenido ya dicho",             ancla:"sel", tam:["frase","parrafo"], grav:"prog", gdef:"no-afecta"},
+ {id:"c8.foco",        crit:"c8", pol:"-", nom:"Cambio abrupto de foco",                ancla:"sel", tam:["frase","parrafo"], grav:"prog", gdef:"no-afecta"},
+ {id:"c9.cumple",      crit:"c9", pol:"+", nom:"El párrafo cumple su función",          ancla:"parrafo", tam:["parrafo"], funcion:true},
+ {id:"c9.nocumple",    crit:"c9", pol:"-", nom:"El párrafo no cumple su función",       ancla:"parrafo", tam:["parrafo"], funcion:true},
+ {id:"c10.aguda",      crit:"c10",pol:"-", nom:"Tilde en aguda",                        ancla:"sel", tam:["palabra"]},
+ {id:"c10.llana",      crit:"c10",pol:"-", nom:"Tilde en llana",                        ancla:"sel", tam:["palabra"]},
+ {id:"c10.esdrujula",  crit:"c10",pol:"-", nom:"Tilde en esdrújula",                    ancla:"sel", tam:["palabra"]},
+ {id:"c10.diacritica", crit:"c10",pol:"-", nom:"Tilde diacrítica o interrogativa",      ancla:"sel", tam:["palabra"]},
+ {id:"c10.hiato",      crit:"c10",pol:"-", nom:"Tilde en hiato",                        ancla:"sel", tam:["palabra"]},
+ {id:"c10.indebida",   crit:"c10",pol:"-", nom:"Tilde indebida",                        ancla:"sel", tam:["palabra"]},
+ {id:"c11.grafia",     crit:"c11",pol:"-", nom:"Grafía",                                ancla:"sel", tam:["palabra"]},
+ {id:"c11.mayuscula",  crit:"c11",pol:"-", nom:"Mayúscula",                             ancla:"sel", tam:["palabra"]},
+ {id:"c11.union",      crit:"c11",pol:"-", nom:"Unión o separación",                    ancla:"sel", tam:["palabra","frase"]},
+ {id:"c11.malescrita", crit:"c11",pol:"-", nom:"Palabra mal escrita",                   ancla:"sel", tam:["palabra"]},
+ {id:"c12.concordancia",crit:"c12",pol:"-", nom:"Concordancia",                         ancla:"sel", tam:["frase","palabra"], grav:"gram", gdef:""},
+ {id:"c12.verbal",     crit:"c12",pol:"-", nom:"Tiempo o modo verbal",                  ancla:"sel", tam:["palabra","frase"], grav:"gram", gdef:""},
+ {id:"c12.preposicion",crit:"c12",pol:"-", nom:"Preposición (queísmo, dequeísmo)",      ancla:"sel", tam:["palabra","frase"], grav:"gram", gdef:""},
+ {id:"c12.pronombre",  crit:"c12",pol:"-", nom:"Pronombre",                             ancla:"sel", tam:["palabra","frase"], grav:"gram", gdef:""},
+ {id:"c12.orden",      crit:"c12",pol:"-", nom:"Orden sintáctico",                      ancla:"sel", tam:["frase"], grav:"gram", gdef:""},
+ {id:"c12.incompleta", crit:"c12",pol:"-", nom:"Oración incompleta",                    ancla:"sel", tam:["frase"], grav:"gram", gdef:""}
+];
+const EVI = {}; CATALOGO.forEach(e=>EVI[e.id]=e);
+
+/* Fila de sugeridas según lo seleccionado, en orden de frecuencia probable */
+const SUGERIDAS = {
+  hueco:["c5.falta","c6.transicion"],
+  signo:["c5.sobra","c5.sujetoverbo","c5.fusionadas","c5.equivocado"],
+  palabra:["c10.aguda","c10.llana","c10.esdrujula","c10.diacritica","c10.hiato","c10.indebida","c11.grafia","c11.mayuscula","c11.malescrita","c7.repeticion","c3.vago","c6.pertinente"],
+  frase:["c12.concordancia","c12.orden","c12.incompleta","c12.verbal","c5.fusionadas","c6.pertinente","c6.relacion","c7.ambiguo","c1.explicita","c2.desarrollada","c2.enunciada","c8.salto"],
+  parrafo:["c9.cumple","c9.nocumple","c1.explicita","c1.implicita","c2.desarrollada","c2.enunciada","c2.sinevidencia","c6.transicion","c8.salto","c8.foco"]
+};
+
+const GRAVEDADES = {
+  punt:[{v:"leve",nom:"Leve"},{v:"grave",nom:"Grave"}],
+  prog:[{v:"no-afecta",nom:"No afecta la comprensión"},{v:"releer",nom:"Obliga a releer"},{v:"impide",nom:"Impide comprender"}],
+  gram:[{v:"",nom:"No compromete la comprensión"},{v:"compromete",nom:"Compromete la comprensión"}]
+};
+/* Shift + clic: la gravedad inmediatamente superior a la de defecto */
+const GRAV_SHIFT = {punt:"grave", prog:"releer", gram:"compromete"};
+const FUNCIONES = [{v:"apertura",nom:"Apertura"},{v:"desarrollo",nom:"Desarrollo"},{v:"cierre",nom:"Cierre"}];
+
+const ATAJOS = {
+  t:"c10.aguda", e:"c10.esdrujula", d:"c10.diacritica",
+  o:"c11.grafia", m:"c11.mayuscula", u:"c11.union",
+  c:"c12.concordancia", v:"c12.verbal", i:"c12.incompleta",
+  p:"c5.falta", f:"c5.fusionadas",
+  r:"c7.repeticion", a:"c7.ambiguo", k:"c6.pertinente"
+};
+const ATAJO_DE = {}; Object.keys(ATAJOS).forEach(k=>ATAJO_DE[ATAJOS[k]]=k.toUpperCase());
+
+/* Umbrales editables. Los conteos se normalizan a `base` palabras. */
+const REGLAS_BASE = {
+  base:375,
+  c3:{colInicial:2, colIntermedio:1, vagosIntermedio:4, vagosAvanzado:2},
+  c5:{gravesInicial:4, parrafosGravesInicial:3, gravesIntermedio:2, levesIntermedio:6, gravesAvanzado:1, levesAvanzado:3},
+  c6:{maxTotalInicial:2, relacionIntermedio:2, reiteradoIntermedio:2, yuxtIntermedio:2, minPertExperto:5, minFormasExperto:4},
+  c7:{repInicial:7, ambInicial:3, repIntermedio:4, ambIntermedio:2, repAvanzado:2, ambAvanzado:1},
+  c8:{releerInicial:3},
+  c10:{totalInicial:7, reglasRepetidasInicial:3, maxPorReglaIntermedio:2, totalIntermedio:4, totalAvanzado:2},
+  c11:{totalInicial:7, reglasRepetidasInicial:3, maxPorReglaIntermedio:2, totalIntermedio:4, totalAvanzado:2},
+  c12:{totalInicial:6, comprometeInicial:3, maxPorTipoIntermedio:2, totalIntermedio:4, totalAvanzado:2}
+};
+const ETIQ_REGLA = {
+  "c3.colInicial":"Coloquialismos que llevan a Inicial",
+  "c3.colIntermedio":"Coloquialismos que llevan a Intermedio",
+  "c3.vagosIntermedio":"Términos vagos o impropios que llevan a Intermedio",
+  "c3.vagosAvanzado":"Términos vagos o impropios desde los que baja a Avanzado",
+  "c5.gravesAvanzado":"Errores graves desde los que baja a Avanzado",
+  "c5.levesAvanzado":"Errores leves desde los que baja a Avanzado",
+  "c5.gravesIntermedio":"Errores graves que llevan a Intermedio",
+  "c5.levesIntermedio":"Errores leves que llevan a Intermedio",
+  "c5.gravesInicial":"Errores graves que llevan a Inicial",
+  "c5.parrafosGravesInicial":"Párrafos con errores graves que llevan a Inicial",
+  "c6.maxTotalInicial":"Marcadores totales iguales o por debajo de los cuales es Inicial",
+  "c6.relacionIntermedio":"Relaciones equivocadas que llevan a Intermedio",
+  "c6.reiteradoIntermedio":"Marcadores reiterados que llevan a Intermedio",
+  "c6.yuxtIntermedio":"Ideas yuxtapuestas que llevan a Intermedio",
+  "c6.minPertExperto":"Marcadores pertinentes mínimos para Experto",
+  "c6.minFormasExperto":"Formas distintas mínimas para Experto",
+  "c7.repAvanzado":"Repeticiones desde las que baja a Avanzado",
+  "c7.ambAvanzado":"Referentes ambiguos desde los que baja a Avanzado",
+  "c7.repIntermedio":"Repeticiones que llevan a Intermedio",
+  "c7.ambIntermedio":"Referentes ambiguos que llevan a Intermedio",
+  "c7.repInicial":"Repeticiones que llevan a Inicial",
+  "c7.ambInicial":"Referentes ambiguos que llevan a Inicial",
+  "c8.releerInicial":"Marcas que obligan a releer y llevan a Inicial",
+  "c10.totalAvanzado":"Errores de tilde desde los que baja a Avanzado",
+  "c10.totalIntermedio":"Errores de tilde que llevan a Intermedio",
+  "c10.maxPorReglaIntermedio":"Errores de una misma regla que llevan a Intermedio",
+  "c10.totalInicial":"Errores de tilde que llevan a Inicial",
+  "c10.reglasRepetidasInicial":"Reglas distintas repetidas que llevan a Inicial",
+  "c11.totalAvanzado":"Errores ortográficos desde los que baja a Avanzado",
+  "c11.totalIntermedio":"Errores ortográficos que llevan a Intermedio",
+  "c11.maxPorReglaIntermedio":"Errores de una misma regla que llevan a Intermedio",
+  "c11.totalInicial":"Errores ortográficos que llevan a Inicial",
+  "c11.reglasRepetidasInicial":"Reglas distintas repetidas que llevan a Inicial",
+  "c12.totalAvanzado":"Fallas gramaticales desde las que baja a Avanzado",
+  "c12.totalIntermedio":"Fallas gramaticales que llevan a Intermedio",
+  "c12.maxPorTipoIntermedio":"Fallas de un mismo tipo que llevan a Intermedio",
+  "c12.totalInicial":"Fallas gramaticales que llevan a Inicial",
+  "c12.comprometeInicial":"Fallas que comprometen la comprensión y llevan a Inicial"
+};
+
+const MARCADORES = ["en primer lugar","en segundo lugar","en tercer lugar","por un lado","por otro lado","por otra parte","en cambio","sin embargo","no obstante","aunque","a pesar de","pese a","además","asimismo","también","igualmente","de igual modo","del mismo modo","por lo tanto","por tanto","por consiguiente","en consecuencia","así pues","de ahí que","por ello","porque","ya que","puesto que","dado que","debido a","es decir","o sea","en otras palabras","dicho de otro modo","por ejemplo","tal como","así como","en efecto","de hecho","ahora bien","con todo","en definitiva","en conclusión","para concluir","en síntesis","en suma","finalmente","por último","en resumen","a modo de cierre","primero","luego","después","entonces","mientras que","al mismo tiempo","frente a","respecto a","en cuanto a","en relación con","cabe señalar","cabe destacar","conviene precisar","inicialmente"];
+
+/* =========================================================================
+   2. BANCO DE RECOMENDACIONES
+   {marcador} se llena con datos reales. [[…]] es un segmento opcional: si
+   algún marcador de dentro queda vacío, el segmento entero desaparece.
+   `siempre` en un criterio: en Intermedio se añade la indicación de la
+   evidencia dominante aunque no alcance el umbral de dominancia.
+   ========================================================================= */
+const REC = {
+ c1:{
+  avanzado:"Tu postura es clara, pero aparece tarde. Llévala al primer párrafo: todo lo que viene después se lee a la luz de ese juicio, y si el lector no lo conoce desde el comienzo, tus razones pierden fuerza.",
+  intermedio:"Se intuye qué piensas del resumen, pero no lo dices. Escribe una oración con un juicio de valor explícito, del tipo «el resumen es insuficiente porque…», y construye el resto del texto para sostenerla.",
+  inicial:"No es posible saber qué opinas del resumen. Antes de escribir, decide si cumple o no su propósito y anótalo en una frase. Esa frase va en el primer párrafo, y cada párrafo siguiente debe darle una razón.",
+  tips:{
+   "c1.contradictoria":"Tu texto sostiene dos juicios que no pueden ser ciertos a la vez. Si el resumen tiene aciertos y fallas, dilo así desde el comienzo, por ejemplo «el resumen es parcialmente eficaz», y luego separa lo que logra de lo que no."
+  }
+ },
+ c2:{
+  avanzado:"Tus razones cubren las cuatro características del buen resumen, pero algunas quedan a medio desarrollar[[: {parciales}]]. Para cada una, di qué hace el resumen, muéstralo con una cita y explica por qué eso lo hace mejor o peor.",
+  intermedio:"Nombras las cuatro características, pero casi ninguna está sustentada. Dar una razón no es mencionar el criterio: es afirmar algo del resumen, probarlo con una cita del texto fuente y otra del resumen, y explicar qué muestra la comparación.",
+  inicial:"Tus razones no se apoyan en las cuatro características del buen resumen: idea principal, estructura, fidelidad y estrategias discursivas. Organiza el texto alrededor de ellas, un párrafo para cada una, y deja por fuera las impresiones generales.",
+  tips:{
+   "c2.unafuente":"Te apoyas en una sola fuente[[ al hablar de {caracs}]]. Para cada juicio, cita el pasaje del texto fuente y el pasaje del resumen donde se ve el acierto o la falla: sin la doble cita, el juicio queda sin prueba.",
+   "c2.sinevidencia":"Afirmas sin mostrar[[ cuando hablas de {caracs}]]. Cada juicio necesita una cita breve que el lector pueda verificar; sin ella, tu afirmación vale lo mismo que su contraria.",
+   "c2.pocopertinente":"Algunas de tus citas no prueban lo que dices. Antes de citar, pregúntate si ese fragmento muestra exactamente el acierto o la falla que estás señalando.",
+   "c2.enunciada":"Dices qué hace el resumen, pero no por qué importa[[, sobre todo en {caracs}]]. Después de cada afirmación, añade la oración que falta: «esto afecta al lector porque…».",
+   "c2.ausente":"No valoras {caracs}. La rúbrica pide juzgar las cuatro características; si falta una, este criterio no puede pasar del nivel inicial, por bien desarrolladas que estén las demás.",
+   "c2.margen":"Parte de tu argumentación valora aspectos que no están entre las cuatro características. Recorta esos comentarios y usa el espacio para desarrollar las que sí cuentan."
+  }
+ },
+ c3:{
+  avanzado:"Tu registro es formal, pero algunas palabras no dicen exactamente lo que quieres[[, como {ejemplos}]]. En un análisis crítico, «bueno» o «eficaz» dicen menos que «fiel», «completo» o «jerarquizado».",
+  intermedio:"Varias palabras vagas debilitan tu análisis[[, como {ejemplos}]]. Cámbialas por términos que nombren con precisión lo que evalúas: omite, distorsiona, jerarquiza, parafrasea.",
+  inicial:"El texto suena más a conversación que a análisis. [[Expresiones como {ejemplos} son propias de la oralidad; ]]reescribe esas frases con el vocabulario del análisis de textos.",
+  tips:{
+   "c3.impropio":"Algunas palabras aparecen con un sentido que no tienen[[, como {ejemplos}]]. Si dudas del significado de una palabra, confírmalo antes de usarla."
+  }
+ },
+ c4:{
+  corto:"Tu texto tiene {n} palabras; le faltan {d} para el mínimo de 350. Esa extensión se gana desarrollando una razón que quedó corta, no repitiendo ideas.",
+  largo:"Tu texto tiene {n} palabras; le sobran {d} sobre el máximo de 400. Busca las frases que dicen lo mismo dos veces: casi siempre ahí están las palabras que sobran."
+ },
+ c5:{
+  avanzado:"Tu puntuación funciona, con algunos descuidos que no afectan la lectura. Relee en voz alta: donde haces una pausa natural suele faltar una coma, y donde cambias de idea, un punto.",
+  intermedio:"Algunos errores de puntuación obligan a releer. Revisa sobre todo los lugares donde unes dos oraciones completas con una coma: ahí va un punto o un punto y coma.",
+  inicial:"La puntuación impide seguir varias partes del texto. Trabaja con oraciones más cortas, una idea por oración, y cuando eso funcione vuelve a unir ideas con conectores.",
+  tips:{
+   "c5.sujetoverbo":"No separes el sujeto de su verbo con una coma, aunque el sujeto sea largo.[[ Revisa {ejemplos}.]]",
+   "c5.fusionadas":"Unes con coma oraciones que deberían ir separadas. Si a ambos lados de la coma hay una oración completa, cámbiala por punto o punto y coma.",
+   "c5.falta":"Faltan comas en incisos y después de los conectores que abren una oración, como «sin embargo,» o «por lo tanto,»."
+  }
+ },
+ c6:{
+  avanzado:"Enlazas bien las ideas, pero repites los mismos conectores. Alterna con equivalentes que marquen la misma relación: si ya usaste «además», prueba «asimismo» o «a esto se suma».",
+  intermedio:"Algunos conectores no corresponden a la relación entre las ideas. Antes de usar uno, pregúntate qué relación quieres marcar: oposición (sin embargo), consecuencia (por lo tanto), adición (además) o ejemplo (por ejemplo).",
+  inicial:"Las ideas aparecen una al lado de la otra, sin nada que las una. Empieza cada párrafo con un conector que diga cómo se relaciona con el anterior, y usa otros dentro del párrafo para marcar causa, oposición y consecuencia.",
+  tips:{
+   "c6.transicion":"Algunos párrafos empiezan sin transición. Desde la primera palabra, el lector debe saber si lo que sigue suma, contrasta o concluye."
+  }
+ },
+ c7:{
+  avanzado:"Retomas las ideas con precisión, salvo algunas repeticiones[[ como {ejemplos}]]. Cuando una palabra se repite muy seguido, sustitúyela por un sinónimo o un pronombre, u omítela si el contexto la deja clara.",
+  intermedio:"Las repeticiones son frecuentes y cansan la lectura. Para nombrar lo mismo sin repetir, alterna expresiones equivalentes («el resumen», «el texto de la IA», «la síntesis») o usa pronombres.",
+  inicial:"Las repeticiones y los pronombres sin referente claro hacen difícil seguir de qué hablas. Revisa cada «este», «esto» o «lo»: si el lector no puede señalar a qué se refiere, escribe el sustantivo.",
+  tips:{
+   "c7.ambiguo":"[[En {ejemplos} no queda claro a qué se refiere el pronombre. ]]Cuando haya dos posibles antecedentes, repite el sustantivo: una repetición es mejor que una ambigüedad."
+  }
+ },
+ c8:{
+  avanzado:"El texto avanza, aunque en algunos puntos cambia de tema sin aviso. Cada párrafo debe partir de algo que ya se dijo y agregar algo nuevo; si no retoma nada, anuncia el cambio con una transición.",
+  intermedio:"Hay saltos y repeticiones que obligan a releer. Antes de escribir, haz un esquema de una línea por párrafo: si dos líneas dicen lo mismo, fusiónalas; si una no se conecta con la anterior, cambia el orden.",
+  inicial:"Es difícil seguir el hilo del texto. Planea antes de escribir: postura, una razón por párrafo siguiendo las cuatro características, cierre. Empieza a redactar solo cuando tengas ese orden.",
+  tips:{
+   "c8.repite":"Algunas ideas aparecen dos veces con otras palabras. El espacio que liberas al eliminarlas es el que te falta para desarrollar tus razones."
+  }
+ },
+ c9:{
+  avanzado:"Uno de tus párrafos no cumple su función.[[ {funcion}]]",
+  intermedio:"Dos de tus párrafos no cumplen su función. Recuerda la estructura: una apertura con la postura, un párrafo por cada razón y un cierre que confirme el juicio.",
+  inicial:"El texto necesita al menos tres párrafos con funciones distintas: uno que presente la postura, uno o más que la justifiquen y uno que la cierre.",
+  funciones:{
+   apertura:"El primer párrafo debe presentar el tema y tu postura; no adelantes ahí las razones.",
+   desarrollo:"Cada párrafo de desarrollo debe sostener una sola razón, con su cita y su explicación.",
+   cierre:"El cierre debe retomar tu postura a la luz de lo argumentado, no abrir ideas nuevas."
+  }
+ },
+ c10:{
+  siempre:true,
+  avanzado:"Tienes algunos descuidos de tilde[[, como {ejemplos}]]. Una revisión final dedicada solo a las tildes los resuelve.",
+  intermedio:"Repites el mismo error de tilde.",
+  inicial:"Los errores de tilde son frecuentes. Repasa las reglas generales: las agudas llevan tilde si terminan en n, s o vocal; las llanas, si no terminan en n, s o vocal; las esdrújulas, siempre.",
+  tips:{
+   "c10.aguda":"Las palabras agudas terminadas en n, s o vocal llevan tilde: expresó, falló, minimizó.[[ Revisa {ejemplos}.]]",
+   "c10.llana":"Las llanas llevan tilde cuando no terminan en n, s o vocal: difícil, útil, carácter.[[ Revisa {ejemplos}.]]",
+   "c10.esdrujula":"Todas las esdrújulas llevan tilde, sin excepción: científico, retórica, característica.[[ Revisa {ejemplos}.]]",
+   "c10.diacritica":"Algunas palabras cambian de sentido con la tilde: más y mas, él y el, sí y si, sé y se. Los interrogativos la llevan también dentro de una oración: «no explica cómo se organizan».",
+   "c10.hiato":"Cuando una vocal cerrada tónica va junto a una abierta, lleva tilde: día, país, reúne.[[ Revisa {ejemplos}.]]",
+   "c10.indebida":"Pones tilde donde no va[[, como en {ejemplos}]]. Los monosílabos no se tildan salvo los diacríticos: fue, dio, vio y ti van sin tilde."
+  }
+ },
+ c11:{
+  siempre:true,
+  avanzado:"[[Revisa {ejemplos}: ]]son errores ortográficos puntuales, pero se notan.",
+  intermedio:"Repites un mismo error ortográfico.",
+  inicial:"Los errores ortográficos son frecuentes. Reserva unos minutos al final solo para revisar cómo están escritas las palabras; leer de atrás hacia adelante ayuda a no distraerse con el sentido.",
+  tips:{
+   "c11.grafia":"Revisa las letras que suenan igual: b y v; s, c y z; g y j; ll y y; h.[[ En tu texto: {ejemplos}.]]",
+   "c11.mayuscula":"Los títulos de obras solo llevan mayúscula en la primera palabra y en los nombres propios. Los días, los meses y los gentilicios van en minúscula.",
+   "c11.union":"Distingue porque (causa), por qué (pregunta), porqué (sustantivo) y por que; sino (oposición) y si no (condición).[[ Revisa {ejemplos}.]]",
+   "c11.malescrita":"Algunas palabras están mal escritas.[[ Revisa {ejemplos}.]] Una lectura final lenta, palabra por palabra, las detecta casi todas."
+  }
+ },
+ c12:{
+  siempre:true,
+  avanzado:"Tus oraciones son correctas en general.[[ Revisa {ejemplos}.]]",
+  intermedio:"Se repite un mismo tipo de error gramatical.",
+  inicial:"Varias oraciones están mal construidas y eso impide entenderlas. Escribe oraciones más cortas, con un sujeto y un verbo claros, y comprueba que cada una se entienda sola.",
+  tips:{
+   "c12.concordancia":"Revisa que el verbo concuerde con su sujeto y el adjetivo con su sustantivo, sobre todo cuando hay muchas palabras entre ellos: «los escenarios como la situación de los estudiantes fue crucial» debe ser «fueron cruciales».",
+   "c12.verbal":"Mantén un mismo tiempo verbal: si analizas el resumen en presente, no pases al pasado sin razón.",
+   "c12.preposicion":"Revisa el queísmo y el dequeísmo: en «pienso de que» sobra el «de»; en «me di cuenta que» falta.",
+   "c12.pronombre":"No repitas el sujeto con un pronombre: «el resumen, a pesar de no incluir citas, este menciona» debe ser «el resumen, a pesar de no incluir citas, menciona».",
+   "c12.orden":"Algunas oraciones tienen un orden que confunde. Empieza por el sujeto, sigue con el verbo y deja los complementos al final.",
+   "c12.incompleta":"Algunas oraciones no tienen verbo principal: empiezan una idea y no la terminan. Lee cada oración por separado y pregúntate si se sostiene sola."
+  }
+ }
+};
+
+/* =========================================================================
+   3. TEXTO
+   ========================================================================= */
+const RE_PAL = /[\p{L}\p{N}]/u;
+
+function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmt(n){ return (Math.round(n*100)/100).toFixed(2).replace(".",","); }
+function sinTildes(t){ return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase(); }
+function unirLista(a){ return a.length<=1 ? (a[0]||"") : a.slice(0,-1).join(", ")+" y "+a[a.length-1]; }
+
+function contarPalabras(t){
+  return (String(t).trim().match(/[^\s]+/g)||[]).filter(w=>RE_PAL.test(w)).length;
+}
+
+function normalizarTexto(bruto){
+  // Los textos pegados desde un PDF traen saltos de línea duros a mitad de
+  // frase. Se canoniza una sola vez: líneas cortadas se unen, los párrafos
+  // quedan separados por una línea en blanco.
+  let t=String(bruto||"").replace(/\r\n?/g,"\n").replace(/[ \t]+\n/g,"\n").trim();
+  if(!t) return {texto:"", unidas:0, guiones:0};
+  const hayBlancos=/\n[ \t]*\n/.test(t);
+  const bloques = hayBlancos ? t.split(/\n[ \t]*\n+/) : [t];
+  let unidas=0, guiones=0; const salida=[];
+  bloques.forEach(bl=>{
+    const lineas=bl.split("\n").map(x=>x.trim()).filter(x=>x.length);
+    if(!lineas.length) return;
+    const largos=lineas.map(x=>x.length).sort((a,b)=>a-b);
+    const ancho=largos[Math.floor(largos.length*0.85)]||largos[largos.length-1];
+    const envuelto=!hayBlancos && lineas.length>2;
+    let acc=[];
+    lineas.forEach((ln,i)=>{
+      const ultima=i===lineas.length-1;
+      let cierra=ultima;
+      if(!ultima && envuelto) cierra = /[.!?:»”"']$/.test(ln) && ln.length < ancho*0.9;
+      if(/[\p{Ll}]-$/u.test(ln) && !ultima && /^[\p{Ll}]/u.test(lineas[i+1])){
+        acc.push(ln.slice(0,-1)); acc.push("\u0000"); guiones++;
+      } else acc.push(ln);
+      if(!ultima && !cierra) unidas++;
+      if(cierra && acc.length){ salida.push(unir(acc)); acc=[]; }
+    });
+    if(acc.length) salida.push(unir(acc));
+  });
+  function unir(a){
+    let r="", pegar=false;
+    for(const x of a){
+      if(x==="\u0000"){ pegar=true; continue; }
+      r = r==="" ? x : r+(pegar?"":" ")+x; pegar=false;
+    }
+    return r.replace(/\s+/g," ").trim();
+  }
+  return {texto:salida.join("\n\n"), unidas, guiones};
+}
+
+function separarParrafos(t){
+  const out=[]; const re=/[^\n]+/g; let m;
+  while((m=re.exec(t))!==null){ if(m[0].trim()) out.push({inicio:m.index, fin:m.index+m[0].length}); }
+  return out;
+}
+function parrafoDe(parrafos, pos){
+  for(let i=0;i<parrafos.length;i++){ if(pos>=parrafos[i].inicio && pos<=parrafos[i].fin) return i; }
+  // entre párrafos: el siguiente
+  for(let i=0;i<parrafos.length;i++){ if(pos<parrafos[i].inicio) return i; }
+  return parrafos.length-1;
+}
+
+/* Ajusta una selección cruda a unidades legibles. Si contiene letras, se
+   extiende a palabras completas; si solo contiene signos, queda como está. */
+function ajustarSeleccion(t, a, b){
+  if(a>b){ const x=a; a=b; b=x; }
+  a=Math.max(0,a); b=Math.min(t.length,b);
+  while(a<b && /\s/.test(t[a])) a++;
+  while(b>a && /\s/.test(t[b-1])) b--;
+  if(a===b) return null;
+  if(!RE_PAL.test(t.slice(a,b))) return {inicio:a, fin:b};
+  while(a>0 && RE_PAL.test(t[a-1])) a--;
+  while(b<t.length && RE_PAL.test(t[b])) b++;
+  return {inicio:a, fin:b};
+}
+function clasificarSeleccion(t, parrafos, sel){
+  if(!sel) return null;
+  if(sel.punto!=null) return "hueco";
+  const frag=t.slice(sel.inicio, sel.fin);
+  if(!RE_PAL.test(frag)) return "signo";
+  const p=parrafos[parrafoDe(parrafos, sel.inicio)];
+  if(p && sel.inicio<=p.inicio && sel.fin>=p.fin) return "parrafo";
+  return /\s/.test(frag) ? "frase" : "palabra";
+}
+/* Un clic sin arrastre: dentro de una palabra devuelve la palabra; en un
+   espacio o junto a un signo devuelve un punto al final de lo anterior. */
+function interpretarClic(t, pos){
+  const antes=t[pos-1]||"", despues=t[pos]||"";
+  if(RE_PAL.test(antes) && RE_PAL.test(despues)){
+    let a=pos, b=pos;
+    while(a>0 && RE_PAL.test(t[a-1])) a--;
+    while(b<t.length && RE_PAL.test(t[b])) b++;
+    return {tipo:"palabra", inicio:a, fin:b};
+  }
+  let p=pos; while(p>0 && /\s/.test(t[p-1])) p--;
+  return {tipo:"hueco", punto:p};
+}
+
+function inventarioMarcadores(t){
+  const bajo=t.toLowerCase(); const hall=[];
+  MARCADORES.forEach(m=>{
+    const re=new RegExp("(^|[^\\p{L}])"+m.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![\\p{L}])","giu");
+    let x;
+    while((x=re.exec(bajo))!==null){
+      const ini=x.index+x[1].length;
+      hall.push({forma:m, inicio:ini, fin:ini+m.length});
+      re.lastIndex=ini+m.length;
+    }
+  });
+  hall.sort((a,b)=>a.inicio-b.inicio || (b.fin-b.inicio)-(a.fin-a.inicio));
+  const limpio=[]; let ult=-1;
+  hall.forEach(h=>{ if(h.inicio>=ult){ limpio.push(h); ult=h.fin; } });
+  return limpio;
+}
+
+function fragmentoDe(ev, m, max){
+  max=max||42;
+  if(m.punto!=null){
+    const a=Math.max(0,m.punto-18);
+    return "…"+ev.texto.slice(a,m.punto).replace(/^\S*\s/,"")+" ‸";
+  }
+  const f=ev.texto.slice(m.inicio,m.fin).replace(/\s+/g," ");
+  return f.length>max ? f.slice(0,max-1).trim()+"…" : f;
+}
+
+/* =========================================================================
+   4. LÓGICA
+   Funciones puras sobre el objeto evaluación. Nada aquí toca el DOM.
+   ========================================================================= */
+let REGLAS = JSON.parse(JSON.stringify(REGLAS_BASE));
+const ORDEN = {experto:0, avanzado:1, intermedio:2, inicial:3};
+let _seq = 0;
+function nuevoId(pref){ _seq++; return pref+Date.now().toString(36)+_seq.toString(36)+Math.random().toString(36).slice(2,5); }
+function ahora(){ return new Date().toISOString(); }
+
+function crearEvaluacion(o){
+  const texto=o.texto;
+  const ev={
+    id:nuevoId("ev"), creada:ahora(), modificada:ahora(),
+    visibilidad:"privada", etiquetaPublica:o.etiqueta||"", estudiante:o.estudiante||"",
+    texto, palabras:contarPalabras(texto), parrafos:separarParrafos(texto),
+    marcas:[], generales:[], decisiones:{}, recExcluidas:[], observaciones:""
+  };
+  RUBRICA.forEach(c=>ev.decisiones[c.id]={nivel:null, motivoDesvio:""});
+  return ev;
+}
+
+function funcionPorPosicion(ev, idx){
+  if(idx===0) return "apertura";
+  if(idx===ev.parrafos.length-1) return "cierre";
+  return "desarrollo";
+}
+
+/* Convierte una selección en el ancla que pide la evidencia. Devuelve null
+   si la evidencia no puede anclarse ahí. */
+function anclar(ev, e, sel){
+  const P=ev.parrafos;
+  const ref = sel.punto!=null ? sel.punto : sel.inicio;
+  const pi = parrafoDe(P, ref);
+  if(e.ancla==="parrafo") return {inicio:P[pi].inicio, fin:P[pi].fin, punto:null, pi};
+  if(e.ancla==="inicio") return {inicio:null, fin:null, punto:P[pi].inicio, pi};
+  if(e.ancla==="punto"){
+    const p = sel.punto!=null ? sel.punto : sel.fin;
+    return {inicio:null, fin:null, punto:p, pi:parrafoDe(P, Math.max(0,p-1))};
+  }
+  // "sel": un hueco se convierte en la palabra que lo precede
+  if(sel.punto!=null){
+    let b=sel.punto, a=b;
+    while(a>0 && RE_PAL.test(ev.texto[a-1])) a--;
+    if(a===b) return null;
+    return {inicio:a, fin:b, punto:null, pi};
+  }
+  return {inicio:sel.inicio, fin:sel.fin, punto:null, pi};
+}
+
+function crearMarca(ev, eviId, sel, op){
+  op=op||{};
+  const e=EVI[eviId]; if(!e || e.general || !sel) return null;
+  const a=anclar(ev, e, sel); if(!a) return null;
+  // ninguna marca fuera del texto ni vacía
+  const L=ev.texto.length;
+  if(a.punto!=null ? (a.punto<0 || a.punto>L) : (a.inicio<0 || a.fin>L || a.fin<=a.inicio)) return null;
+  const carac = e.carac ? (op.caracteristica||"ideaPrincipal") : null;
+  // no duplica la misma evidencia sobre el mismo ancla
+  const igual=ev.marcas.find(m=>m.evidencia===eviId && m.inicio===a.inicio && m.fin===a.fin && m.punto===a.punto && m.caracteristica===carac);
+  if(igual) return igual;
+  const m={
+    id:nuevoId("m"), evidencia:eviId, inicio:a.inicio, fin:a.fin, punto:a.punto,
+    parrafo:a.pi+1, caracteristica:carac,
+    gravedad: e.grav ? (op.shift ? GRAV_SHIFT[e.grav] : e.gdef) : null,
+    funcion: e.funcion ? funcionPorPosicion(ev, a.pi) : null,
+    comentario:"", creada:ahora()
+  };
+  ev.marcas.push(m);
+  return m;
+}
+function crearGeneral(ev, eviId, op){
+  const e=EVI[eviId]; if(!e || !e.general) return null;
+  const carac = e.carac ? (op&&op.caracteristica) : null;
+  if(e.carac && !carac) return null;
+  const igual=ev.generales.find(g=>g.evidencia===eviId && g.caracteristica===carac);
+  if(igual) return igual;
+  const g={id:nuevoId("g"), evidencia:eviId, caracteristica:carac, comentario:""};
+  ev.generales.push(g);
+  return g;
+}
+
+function posDe(m){ return m.punto!=null ? m.punto : m.inicio; }
+/* Posición donde se pinta el número: al final del fragmento o en el hueco.
+   Numerar por aquí garantiza que en la lectura los números vayan en orden. */
+function posNumero(m){ return m.punto!=null ? m.punto : m.fin; }
+function marcasDe(ev, crit){ return ev.marcas.filter(m=>EVI[m.evidencia] && EVI[m.evidencia].crit===crit); }
+function generalesDe(ev, crit){ return ev.generales.filter(g=>EVI[g.evidencia] && EVI[g.evidencia].crit===crit); }
+function ordenarMarcas(ms){
+  return ms.slice().sort((a,b)=> posNumero(a)-posNumero(b) || ((a.punto!=null)-(b.punto!=null)) || (posDe(a)-posDe(b)) || (a.creada<b.creada?-1:a.creada>b.creada?1:0));
+}
+function numerar(ev){
+  const mapa={}; ordenarMarcas(ev.marcas).forEach((m,i)=>mapa[m.id]=i+1); return mapa;
+}
+function contar(ms, id){ return ms.filter(m=>m.evidencia===id).length; }
+
+/* ---------- sugerencia de nivel ---------- */
+function sugerir(ev, cid){
+  const R=REGLAS, P=ev.palabras||1;
+  const norm=n=>n*R.base/P;
+  const ms=marcasDe(ev,cid), gs=generalesDe(ev,cid);
+  const err=ms.filter(m=>EVI[m.evidencia].pol==="-");
+  const pl=(n,s,p)=>n+" "+(n===1?s:p);
+
+  if(cid==="c1"){
+    if(!ms.length && !gs.length) return {nivel:null, razon:"Marca la postura o registra que no se identifica."};
+    if(gs.some(g=>g.evidencia==="c1.ausente")) return {nivel:"inicial", razon:"Postura registrada como no identificable."};
+    const exp=ms.filter(m=>m.evidencia==="c1.explicita");
+    const imp=ms.filter(m=>m.evidencia==="c1.implicita");
+    const con=ms.filter(m=>m.evidencia==="c1.contradictoria");
+    let n, r;
+    if(exp.length){
+      const p1=exp.some(m=>m.parrafo===1);
+      n=p1?"experto":"avanzado";
+      r=p1?"Postura explícita en el primer párrafo":"Postura explícita en el párrafo "+Math.min(...exp.map(m=>m.parrafo));
+    } else if(imp.length){ n="intermedio"; r="Postura solo implícita"; }
+    else { n="intermedio"; r="Solo hay valoraciones contradictorias"; }
+    if(con.length && exp.length){ n = ORDEN[n]<ORDEN.intermedio ? "intermedio" : n; r+=", pero con valoraciones contradictorias"; }
+    return {nivel:n, razon:r+"."};
+  }
+
+  if(cid==="c2"){
+    if(!ms.length && !gs.length) return {nivel:null, razon:"Marca las razones del texto según la característica que valoran."};
+    const est=estadoCaracteristicas(ev);
+    const aus=est.filter(x=>x.estado==="ausente"), par=est.filter(x=>x.estado==="parcial"), com=est.filter(x=>x.estado==="completa");
+    const partes=[];
+    if(com.length) partes.push("completas: "+com.map(x=>x.nom.toLowerCase()).join(", "));
+    if(par.length) partes.push("parciales: "+par.map(x=>x.nom.toLowerCase()).join(", "));
+    if(aus.length) partes.push("ausentes: "+aus.map(x=>x.nom.toLowerCase()).join(", "));
+    const r=partes.join(" · ");
+    const R0=r.charAt(0).toUpperCase()+r.slice(1)+".";
+    if(aus.length) return {nivel:"inicial", razon:R0};
+    if(!par.length) return {nivel:"experto", razon:R0};
+    if(par.length<=2) return {nivel:"avanzado", razon:R0};
+    return {nivel:"intermedio", razon:R0};
+  }
+
+  if(cid==="c3"){
+    const R3=R.c3, col=contar(ms,"c3.coloquial"), vp=contar(ms,"c3.vago")+contar(ms,"c3.impropio");
+    const r = (col||vp) ? pl(col,"coloquialismo","coloquialismos")+", "+pl(vp,"término vago o impropio","términos vagos o impropios")+"." : "Sin problemas de léxico marcados.";
+    if(norm(col)>=R3.colInicial) return {nivel:"inicial", razon:r};
+    if(norm(col)>=R3.colIntermedio || norm(vp)>=R3.vagosIntermedio) return {nivel:"intermedio", razon:r};
+    if(norm(vp)>=R3.vagosAvanzado) return {nivel:"avanzado", razon:r};
+    return {nivel:"experto", razon:r};
+  }
+
+  if(cid==="c4"){
+    const n=ev.palabras, r=n+" palabras; el rango pedido es de 350 a 400.";
+    if(n>=350&&n<=400) return {nivel:"experto", razon:r};
+    if((n>=320&&n<=349)||(n>=401&&n<=430)) return {nivel:"avanzado", razon:r};
+    if((n>=290&&n<=319)||(n>=431&&n<=460)) return {nivel:"intermedio", razon:r};
+    return {nivel:"inicial", razon:r};
+  }
+
+  if(cid==="c5"){
+    const R5=R.c5;
+    const gr=err.filter(m=>m.gravedad==="grave"), lv=err.filter(m=>m.gravedad!=="grave");
+    const pg=new Set(gr.map(m=>m.parrafo)).size;
+    const r = err.length ? pl(gr.length,"error grave","errores graves")+", "+pl(lv.length,"leve","leves")+"." : "Sin errores de puntuación marcados.";
+    if(norm(gr.length)>=R5.gravesInicial || pg>=R5.parrafosGravesInicial) return {nivel:"inicial", razon:r};
+    if(norm(gr.length)>=R5.gravesIntermedio || norm(lv.length)>=R5.levesIntermedio) return {nivel:"intermedio", razon:r};
+    if(norm(gr.length)>=R5.gravesAvanzado || norm(lv.length)>=R5.levesAvanzado) return {nivel:"avanzado", razon:r};
+    return {nivel:"experto", razon:r};
+  }
+
+  if(cid==="c6"){
+    const R6=R.c6;
+    if(!ms.length) return {nivel:null, razon:"Marca los marcadores del texto o usa Sugerir marcadores."};
+    const pert=ms.filter(m=>m.evidencia==="c6.pertinente");
+    const rel=contar(ms,"c6.relacion"), reit=contar(ms,"c6.reiterado"), tr=contar(ms,"c6.transicion"), yux=contar(ms,"c6.yuxtapuestas");
+    const total=pert.length+rel+reit;
+    const formas=new Set(pert.map(m=>sinTildes(ev.texto.slice(m.inicio,m.fin)).trim())).size;
+    const r=pl(pert.length,"pertinente","pertinentes")+" en "+pl(formas,"forma","formas")+(rel?", "+pl(rel,"relación equivocada","relaciones equivocadas"):"")+
+      (reit?", "+pl(reit,"reiterado","reiterados"):"")+(tr?", "+pl(tr,"párrafo sin transición","párrafos sin transición"):"")+(yux?", "+pl(yux,"caso","casos")+" de ideas yuxtapuestas":"")+".";
+    if(norm(total)<=R6.maxTotalInicial || rel>pert.length) return {nivel:"inicial", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    if(rel>=R6.relacionIntermedio || tr>=1 || reit>=R6.reiteradoIntermedio || yux>=R6.yuxtIntermedio) return {nivel:"intermedio", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    if(norm(pert.length)>=R6.minPertExperto && formas>=R6.minFormasExperto && err.length===0) return {nivel:"experto", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    return {nivel:"avanzado", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+  }
+
+  if(cid==="c7"){
+    const R7=R.c7, rep=contar(ms,"c7.repeticion"), amb=contar(ms,"c7.ambiguo");
+    const r=(rep||amb) ? pl(rep,"repetición","repeticiones")+", "+pl(amb,"referente ambiguo","referentes ambiguos")+"." : "Sin repeticiones ni ambigüedades marcadas.";
+    const nr=norm(rep), na=norm(amb);
+    if(nr>=R7.repInicial||na>=R7.ambInicial) return {nivel:"inicial", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    if(nr>=R7.repIntermedio||na>=R7.ambIntermedio) return {nivel:"intermedio", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    if(nr>=R7.repAvanzado||na>=R7.ambAvanzado) return {nivel:"avanzado", razon:r.charAt(0).toUpperCase()+r.slice(1)};
+    return {nivel:"experto", razon:r};
+  }
+
+  if(cid==="c8"){
+    const imp=err.filter(m=>m.gravedad==="impide").length, rel=err.filter(m=>m.gravedad==="releer").length, na=err.filter(m=>m.gravedad==="no-afecta"||!m.gravedad).length;
+    const r=err.length ? [imp?pl(imp,"marca que impide comprender","marcas que impiden comprender"):"", rel?pl(rel,"que obliga a releer","que obligan a releer"):"", na?pl(na,"que no afecta la comprensión","que no afectan la comprensión"):""].filter(Boolean).join(", ")+"." : "Sin saltos, repeticiones ni cambios de foco marcados.";
+    const R0=r.charAt(0).toUpperCase()+r.slice(1);
+    if(imp>=1 || rel>=R.c8.releerInicial) return {nivel:"inicial", razon:R0};
+    if(rel>=1) return {nivel:"intermedio", razon:R0};
+    if(na>=1) return {nivel:"avanzado", razon:R0};
+    return {nivel:"experto", razon:R0};
+  }
+
+  if(cid==="c9"){
+    const nP=ev.parrafos.length;
+    const falla=new Set(ms.filter(m=>m.evidencia==="c9.nocumple").map(m=>m.parrafo)).size;
+    const r=pl(nP,"párrafo","párrafos")+", "+pl(falla,"no cumple su función","no cumplen su función")+".";
+    if(nP<3) return {nivel:"inicial", razon:r};
+    if(falla===0) return {nivel:"experto", razon:r};
+    if(falla===1) return {nivel:"avanzado", razon:r};
+    if(falla===2) return {nivel:"intermedio", razon:r};
+    return {nivel:"inicial", razon:r};
+  }
+
+  if(cid==="c10"||cid==="c11"){
+    const Rx=R[cid];
+    const por={}; err.forEach(m=>por[m.evidencia]=(por[m.evidencia]||0)+1);
+    const t=norm(err.length), maxR=Math.max(0,...Object.values(por)), rep=Object.values(por).filter(v=>v>=2).length;
+    const desglose=Object.keys(por).map(k=>por[k]+" en "+EVI[k].nom.replace(/^Tilde en /,"").replace(/^Tilde /,"").toLowerCase()).join(", ");
+    const r=err.length ? pl(err.length,"error","errores")+": "+desglose+"." : "Sin errores marcados.";
+    if(t>=Rx.totalInicial || rep>=Rx.reglasRepetidasInicial) return {nivel:"inicial", razon:r};
+    if(maxR>=Rx.maxPorReglaIntermedio || t>=Rx.totalIntermedio) return {nivel:"intermedio", razon:r};
+    if(t>=Rx.totalAvanzado) return {nivel:"avanzado", razon:r};
+    return {nivel:"experto", razon:r};
+  }
+
+  if(cid==="c12"){
+    const R12=R.c12;
+    const por={}; err.forEach(m=>por[m.evidencia]=(por[m.evidencia]||0)+1);
+    const t=norm(err.length), maxT=Math.max(0,...Object.values(por));
+    const comp=err.filter(m=>m.gravedad==="compromete").length;
+    const desglose=Object.keys(por).map(k=>por[k]+" de "+EVI[k].nom.replace(/ \(.*\)$/,"").toLowerCase()).join(", ");
+    const r=err.length ? pl(err.length,"falla","fallas")+": "+desglose+(comp?"; "+comp+" compromete"+(comp===1?"":"n")+" la comprensión":"")+"." : "Sin errores marcados.";
+    if(t>=R12.totalInicial || comp>=R12.comprometeInicial) return {nivel:"inicial", razon:r};
+    if(maxT>=R12.maxPorTipoIntermedio || t>=R12.totalIntermedio) return {nivel:"intermedio", razon:r};
+    if(t>=R12.totalAvanzado) return {nivel:"avanzado", razon:r};
+    return {nivel:"experto", razon:r};
+  }
+  return {nivel:null, razon:""};
+}
+
+function estadoCaracteristicas(ev){
+  const ms=marcasDe(ev,"c2").filter(m=>m.caracteristica), gs=generalesDe(ev,"c2");
+  return CARACTERISTICAS.map(c=>{
+    const mk=ms.filter(m=>m.caracteristica===c.id);
+    const aus=gs.some(g=>g.evidencia==="c2.ausente"&&g.caracteristica===c.id);
+    let estado;
+    if(aus || !mk.length) estado="ausente";
+    else if(mk.some(m=>EVI[m.evidencia].pol==="-")) estado="parcial";
+    else estado="completa";
+    return {id:c.id, nom:c.nom, art:c.art, estado};
+  });
+}
+
+function totalDe(ev){
+  let suma=0, max=0, dec=0;
+  RUBRICA.forEach(c=>{
+    const d=ev.decisiones[c.id];
+    if(d && d.nivel){ suma+=c.pts[d.nivel]; max+=c.pts.experto; dec++; }
+  });
+  return {suma, max, decididos:dec, faltan:RUBRICA.length-dec};
+}
+
+/* ---------- recomendaciones ---------- */
+function rellenar(pl, datos){
+  const vacio=v=> v==null || v==="" || (Array.isArray(v)&&!v.length);
+  let t=pl.replace(/\[\[([\s\S]*?)\]\]/g,(m,dentro)=>{
+    const claves=(dentro.match(/\{(\w+)\}/g)||[]).map(x=>x.slice(1,-1));
+    return claves.some(k=>vacio(datos[k])) ? "" : dentro;
+  });
+  t=t.replace(/\{(\w+)\}/g,(m,k)=>vacio(datos[k])?"":datos[k]);
+  return t.replace(/\s{2,}/g," ").replace(/\s+([.,;:])/g,"$1").trim();
+}
+function ejemplosDe(ev, ms){
+  return unirLista(ordenarMarcas(ms).filter(m=>m.punto==null).slice(0,3).map(m=>"«"+fragmentoDe(ev,m,34)+"»"));
+}
+function recomendaciones(ev){
+  const out=[];
+  RUBRICA.forEach((c,idx)=>{
+    const d=ev.decisiones[c.id]; if(!d||!d.nivel||d.nivel==="experto") return;
+    const perdidos=c.pts.experto-c.pts[d.nivel];
+    const B=REC[c.id]; let texto;
+    if(c.id==="c4"){
+      const n=ev.palabras;
+      texto = n<350 ? rellenar(B.corto,{n, d:350-n}) : n>400 ? rellenar(B.largo,{n, d:n-400}) : "";
+      if(!texto) texto="Ajusta la extensión al rango de 350 a 400 palabras.";
+    } else {
+      const ms=marcasDe(ev,c.id), err=ms.filter(m=>EVI[m.evidencia].pol==="-");
+      const datos={ejemplos:ejemplosDe(ev,err)};
+      if(c.id==="c2") datos.parciales=unirLista(estadoCaracteristicas(ev).filter(x=>x.estado==="parcial").map(x=>x.art));
+      if(c.id==="c9"){
+        const f=ordenarMarcas(ms.filter(m=>m.evidencia==="c9.nocumple"))[0];
+        datos.funcion = f && B.funciones[f.funcion] ? B.funciones[f.funcion] : "";
+      }
+      texto=rellenar(B[d.nivel], datos);
+      // indicaciones específicas
+      const tips=[];
+      const cuenta={}; err.forEach(m=>cuenta[m.evidencia]=(cuenta[m.evidencia]||0)+1);
+      if(c.id==="c2"){
+        const aus=estadoCaracteristicas(ev).filter(x=>x.estado==="ausente");
+        if(aus.length) tips.push({id:"c2.ausente", caracs:unirLista(aus.map(x=>x.art))});
+      }
+      const orden=CATALOGO.filter(e=>e.crit===c.id).map(e=>e.id);
+      let top=null;
+      orden.forEach(id=>{ if(cuenta[id] && (!top || cuenta[id]>cuenta[top])) top=id; });
+      const dominante = top && cuenta[top]>=2 && cuenta[top]>=0.5*err.length;
+      if(top && B.tips && B.tips[top] && (dominante || (B.siempre && d.nivel==="intermedio")) && !tips.some(x=>x.id===top)){
+        const deTop=err.filter(m=>m.evidencia===top);
+        tips.push({id:top, ejemplos:ejemplosDe(ev,deTop),
+          caracs:unirLista(CARACTERISTICAS.filter(k=>deTop.some(m=>m.caracteristica===k.id)).map(k=>k.art))});
+      }
+      tips.forEach(tp=>{ if(B.tips&&B.tips[tp.id]){ const s=rellenar(B.tips[tp.id],tp); if(s) texto+=" "+s; } });
+    }
+    out.push({crit:c.id, nivel:d.nivel, perdidos, idx, texto, incluida:!(ev.recExcluidas||[]).includes(c.id)});
+  });
+  out.sort((a,b)=> (b.perdidos-a.perdidos) || (a.idx-b.idx));
+  out.forEach((r,i)=>r.top=i<3);
+  return out;
+}
+
+/* ---------- privacidad: búsqueda del nombre antes de publicar ---------- */
+const NO_NOMBRE=new Set(["del","las","los","san","van","von"]);
+function buscarNombre(ev){
+  const partes=sinTildes(ev.estudiante).split(/[^a-zñ]+/).filter(p=>p.length>=3 && !NO_NOMBRE.has(p));
+  if(!partes.length) return [];
+  const donde=[];
+  const revisa=(etq, txt)=>{
+    const t=sinTildes(txt);
+    partes.forEach(p=>{ if(new RegExp("(^|[^a-zñ])"+p+"([^a-zñ]|$)").test(t)) donde.push({donde:etq, parte:p}); });
+  };
+  revisa("el texto", ev.texto);
+  revisa("la etiqueta pública", ev.etiquetaPublica);
+  revisa("las observaciones", ev.observaciones);
+  ev.marcas.forEach(m=>{ if(m.comentario) revisa("un comentario de marca", m.comentario); });
+  ev.generales.forEach(g=>{ if(g.comentario) revisa("un comentario general", g.comentario); });
+  Object.keys(ev.decisiones).forEach(k=>{ const d=ev.decisiones[k]; if(d.motivoDesvio) revisa("una nota de decisión", d.motivoDesvio); });
+  return donde;
+}
+
+/* =========================================================================
+   5. ALMACÉN, CIFRADO Y ARCHIVO
+   ========================================================================= */
+const PREF = "asistente-lectura:v1:";
+const MEMORIA = {};
+const ALM = {
+  persistente:true,
+  leer(k, def){
+    try{ const v=localStorage.getItem(PREF+k); return v==null ? def : JSON.parse(v); }
+    catch(e){ this.persistente=false; return MEMORIA[k]!==undefined ? MEMORIA[k] : def; }
+  },
+  escribir(k, v){
+    try{ localStorage.setItem(PREF+k, JSON.stringify(v)); return true; }
+    catch(e){ this.persistente=false; MEMORIA[k]=v; return false; }
+  }
+};
+
+/* ---------- base64 ---------- */
+function aB64(bytes){
+  const u=new Uint8Array(bytes); let s="";
+  for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null, u.subarray(i,i+0x8000));
+  return btoa(s);
+}
+function deB64(b){ const s=atob(b); const u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); return u; }
+
+/* ---------- cifrado ---------- */
+const ITER = 600000;
+function cripto(){ return (typeof crypto!=="undefined" && crypto.subtle) ? crypto : null; }
+async function derivarClave(pass, sal, iter){
+  const c=cripto(); if(!c) throw new Error("sin-cripto");
+  const base=await c.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  return c.subtle.deriveKey({name:"PBKDF2", salt:sal, iterations:iter||ITER, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function nuevaSesionCifrado(pass){
+  const sal=cripto().getRandomValues(new Uint8Array(16));
+  return {clave:await derivarClave(pass, sal, ITER), sal, iter:ITER};
+}
+async function cifrar(obj, ses){
+  const iv=cripto().getRandomValues(new Uint8Array(12));
+  const datos=await cripto().subtle.encrypt({name:"AES-GCM", iv}, ses.clave, new TextEncoder().encode(JSON.stringify(obj)));
+  return {v:1, kdf:"PBKDF2-SHA256", iter:ses.iter, sal:aB64(ses.sal), iv:aB64(iv), datos:aB64(datos)};
+}
+/* Devuelve {obj, ses} o lanza "contrasena" si la clave no abre el paquete */
+async function descifrar(paq, pass){
+  const sal=deB64(paq.sal);
+  const clave=await derivarClave(pass, sal, paq.iter);
+  let plano;
+  try{ plano=await cripto().subtle.decrypt({name:"AES-GCM", iv:deB64(paq.iv)}, clave, deB64(paq.datos)); }
+  catch(e){ const x=new Error("contrasena"); x.contrasena=true; throw x; }
+  return {obj:JSON.parse(new TextDecoder().decode(plano)), ses:{clave, sal, iter:paq.iter}};
+}
+
+/* ---------- fusión ---------- */
+function fusionar(local, externo, borrLocal, borrExterno){
+  const borradas=[...new Set([...(borrLocal||[]), ...(borrExterno||[])])];
+  const fuera=new Set(borradas);
+  const por={};
+  [...(local||[]), ...(externo||[])].forEach(ev=>{
+    if(!ev || !ev.id || fuera.has(ev.id)) return;
+    if(!por[ev.id] || String(ev.modificada)>String(por[ev.id].modificada)) por[ev.id]=ev;
+  });
+  const historial=Object.values(por).sort((a,b)=>String(b.modificada).localeCompare(String(a.modificada)));
+  return {historial, borradas};
+}
+
+/* Las pruebas (texto base y resumen) se unen por id; gana la más reciente.
+   Comparten la lista de borradas con las evaluaciones: los ids no chocan. */
+function fusionarMateriales(local, externo, borradas){
+  const fuera=new Set(borradas||[]), por={};
+  [...(local||[]), ...(externo||[])].forEach(m=>{
+    if(!m || !m.id || fuera.has(m.id)) return;
+    if(!por[m.id] || String(m.modificada)>String(por[m.id].modificada)) por[m.id]=m;
+  });
+  return Object.values(por).sort((a,b)=>String(b.modificada).localeCompare(String(a.modificada)));
+}
+function mismoMaterial(m, fuente, resumen){
+  const n=x=>String(x||"").replace(/\s+/g," ").trim();
+  return n(m.fuente)===n(fuente) && n(m.resumen)===n(resumen);
+}
+
+/* ---------- capa pública ---------- */
+function copiaPublica(ev){
+  const c=JSON.parse(JSON.stringify(ev));
+  delete c.estudiante;
+  delete c.materialId;   // las pruebas del examen viajan solo en la capa cifrada
+  return c;
+}
+function capaPublica(historial){ return historial.filter(ev=>ev.visibilidad==="publica").map(copiaPublica); }
+
+/* ---------- archivo ---------- */
+function jsonParaScript(x){ return JSON.stringify(x).replace(/</g,"\\u003c"); }
+/* Los marcadores y la etiqueta de cierre se arman por partes: si aparecieran
+   literales dentro de este script, el navegador cortaría el script ahí y la
+   búsqueda de marcadores encontraría el código en vez de los datos. */
+const CIERRA_SCRIPT = "<"+"/script>";
+const MARCA = n => "<"+"!--"+n+"-->";
+function bloqueDatos(nombre, id, valor){
+  return MARCA(nombre+"-INI")+'<script type="application/json" id="'+id+'">'+jsonParaScript(valor)+CIERRA_SCRIPT+MARCA(nombre+"-FIN");
+}
+function construirArchivo(fuente, publicos, cifrado){
+  const doc = /^<!doctype/i.test(fuente) ? fuente : "<!DOCTYPE html>\n"+fuente;
+  const patron = n => new RegExp(MARCA(n+"-INI")+"[\\s\\S]*?"+MARCA(n+"-FIN"));
+  return doc
+    .replace(patron("PUB"), ()=>bloqueDatos("PUB","datos-publicos",publicos))
+    .replace(patron("CIF"), ()=>bloqueDatos("CIF","datos-cifrados",cifrado));
+}
+function leerBloque(id){
+  try{ const n=document.getElementById(id); if(!n) return null; const t=n.textContent.trim(); return t ? JSON.parse(t) : null; }
+  catch(e){ return null; }
+}
+function nombreArchivo(){ return "asistente-lectura-"+new Date().toISOString().slice(0,10)+".html"; }
+
+/* =========================================================================
+   6. INTERFAZ · estado, guardado, selección y lienzo
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const E = {
+  vista:"entrada", ev:null, soloLectura:false,
+  historial:[], borradas:[], materiales:[], publicos:[], cifrado:null, sesion:null, desbloqueado:false, verReferencia:false,
+  prefs:{filtro:"todo", panelCerrado:false, numeros:true, marcas:true, recientes:[], caracteristica:"ideaPrincipal", reglas:null, avisoPublico:false, ultimoMaterial:null},
+  sel:null, tipoSel:null, palFijada:false,
+  deshacer:[], abiertos:new Set(), aislado:null,
+  detector:false, sugerencias:[], descartadas:new Set(),
+  popIds:null, evAbierta:null, tocando:false
+};
+
+/* ---------- guardado ---------- */
+let _tGuardar=null;
+function guardarPrefs(){ ALM.escribir("preferencias", E.prefs); }
+function guardarTodo(){
+  ALM.escribir("historial", E.historial);
+  ALM.escribir("borradas", E.borradas);
+  ALM.escribir("materiales", E.materiales);
+}
+function materialDe(ev){ return ev && ev.materialId ? E.materiales.find(m=>m.id===ev.materialId)||null : null; }
+function programarGuardado(){
+  clearTimeout(_tGuardar);
+  _tGuardar=setTimeout(guardarTodo, 800);
+}
+function tocar(){ if(E.ev){ E.ev.modificada=ahora(); } programarGuardado(); }
+
+/* ---------- deshacer ---------- */
+function instantanea(ev){
+  return JSON.stringify({marcas:ev.marcas, generales:ev.generales, decisiones:ev.decisiones, recExcluidas:ev.recExcluidas});
+}
+function mutar(fn){
+  if(!E.ev || E.soloLectura) return null;
+  E.deshacer.push(instantanea(E.ev));
+  if(E.deshacer.length>60) E.deshacer.shift();
+  const r=fn();
+  tocar();
+  return r;
+}
+function deshacer(){
+  if(!E.ev || E.soloLectura || !E.deshacer.length){ aviso("No hay nada que deshacer."); return; }
+  const s=JSON.parse(E.deshacer.pop());
+  // Los comentarios son texto que escribiste, no una acción que deshacer:
+  // se conservan los actuales de toda marca que siga existiendo.
+  const coment={};
+  [...E.ev.marcas, ...E.ev.generales].forEach(m=>{ if(m.comentario) coment[m.id]=m.comentario; });
+  [...s.marcas, ...s.generales].forEach(m=>{ if(coment[m.id]!=null) m.comentario=coment[m.id]; });
+  Object.assign(E.ev, s);
+  cerrarPop(); tocar(); pintarEval();
+}
+
+/* ---------- avisos ---------- */
+let _tToast=null;
+function aviso(t){
+  let n=document.querySelector(".toast");
+  if(!n){ n=document.createElement("div"); n.className="toast"; n.setAttribute("role","status"); document.body.appendChild(n); }
+  n.textContent=t; n.hidden=false;
+  clearTimeout(_tToast); _tToast=setTimeout(()=>{ n.hidden=true; },2600);
+}
+
+/* ---------- selección ---------- */
+function establecerSel(sel){
+  E.sel=sel;
+  E.tipoSel = sel ? clasificarSeleccion(E.ev.texto, E.ev.parrafos, sel) : null;
+  cerrarPop();
+  pintarLienzo(); pintarPaleta();
+  if(sel) asegurarVisible();
+}
+function asegurarVisible(){
+  try{
+    const n=document.querySelector("#lienzo .t.s, #lienzo .sel-punto"); if(!n) return;
+    const r=n.getBoundingClientRect(); if(!r.height) return;
+    const barra=$("paleta").getBoundingClientRect().bottom;
+    const cuerpo=$("palCuerpo"), fijo=getComputedStyle(cuerpo).position==="fixed";
+    if(fijo){ const tope=cuerpo.getBoundingClientRect().top; if(r.bottom>tope-8) window.scrollBy(0, r.bottom-tope+60); }
+    else if(r.top<barra+8) window.scrollBy(0, r.top-barra-60);
+  }catch(e){}
+}
+function limpiarSel(){ if(E.sel){ E.sel=null; E.tipoSel=null; pintarLienzo(); pintarPaleta(); } }
+
+/* Traduce un punto del DOM a una posición en el texto. Los elementos que no
+   son texto (números, huecos, tiradores) no cuentan. */
+function posDOM(nodo, off){
+  const lz=$("lienzo");
+  if(nodo.nodeType===3){
+    const t=nodo.parentElement && nodo.parentElement.closest(".t");
+    if(t && lz.contains(t)) return (+t.dataset.o)+off;
+  }
+  const r=document.createRange(); r.setStart(nodo, off); r.collapse(true);
+  const ts=lz.querySelectorAll(".t");
+  for(const t of ts){ if(r.comparePoint(t,0)>=0) return +t.dataset.o; }
+  const u=ts[ts.length-1];
+  return u ? (+u.dataset.o)+u.textContent.length : 0;
+}
+/* Punto del texto bajo el dedo o el cursor. En iOS un toque no crea
+   selección, así que la posición se toma de las coordenadas. */
+function caretDesde(evt){
+  const p = evt.changedTouches && evt.changedTouches[0] ? evt.changedTouches[0] : evt;
+  if(p==null || p.clientX==null || (p.clientX===0 && p.clientY===0)) return null;
+  try{
+    if(document.caretPositionFromPoint){ const c=document.caretPositionFromPoint(p.clientX,p.clientY); if(c) return {nodo:c.offsetNode, off:c.offset}; }
+    if(document.caretRangeFromPoint){ const r=document.caretRangeFromPoint(p.clientX,p.clientY); if(r) return {nodo:r.startContainer, off:r.startOffset}; }
+  }catch(e){}
+  return null;
+}
+function alSoltar(evt){
+  if(E.soloLectura || !E.ev) return;
+  const s=window.getSelection();
+  const lz=$("lienzo");
+  if(s && s.rangeCount && !s.isCollapsed && lz.contains(s.anchorNode) && lz.contains(s.focusNode)){
+    const a=posDOM(s.anchorNode,s.anchorOffset), b=posDOM(s.focusNode,s.focusOffset);
+    const sel=ajustarSeleccion(E.ev.texto, a, b);
+    s.removeAllRanges();
+    if(sel) establecerSel(sel);
+    return;
+  }
+  const obj=evt.target;
+  if(obj.closest(".pil")) return;
+  const sug=obj.closest(".t.sug");
+  if(sug){ confirmarSugerencia(+sug.dataset.sug); return; }
+  const conMarca=obj.closest("[data-m]");
+  if(conMarca && conMarca.dataset.m){
+    let ids=conMarca.dataset.m.split(",");
+    if(conMarca.classList.contains("t")) ids=ids.filter(id=>{ const m=E.ev.marcas.find(x=>x.id===id); return m && m.punto==null && m.fin-m.inicio<=LARGO_CLIC; });
+    if(ids.length){ abrirPop(ids, conMarca); return; }
+  }
+  const t=obj.closest(".t");
+  if(!t){ limpiarSel(); return; }
+  let pos=null;
+  const c=caretDesde(evt);
+  if(c && lz.contains(c.nodo)) pos=posDOM(c.nodo, c.off);
+  else if(s && s.rangeCount && lz.contains(s.anchorNode)) pos=posDOM(s.anchorNode, s.anchorOffset);
+  if(pos==null) return;
+  const r=interpretarClic(E.ev.texto, pos);
+  if(r.tipo==="palabra"){
+    if(E.tocando) establecerSel({inicio:r.inicio, fin:r.fin}); else limpiarSel();
+  } else establecerSel({punto:r.punto});
+}
+function selParrafo(i){
+  const p=E.ev.parrafos[i]; if(!p) return;
+  establecerSel({inicio:p.inicio, fin:p.fin});
+}
+
+/* ---------- detector de marcadores ---------- */
+function recalcularSugerencias(){
+  if(!E.detector || !E.ev){ E.sugerencias=[]; return; }
+  const c6=marcasDe(E.ev,"c6");
+  E.sugerencias=inventarioMarcadores(E.ev.texto).filter(s=>
+    !E.descartadas.has(s.inicio+":"+s.fin) &&
+    !c6.some(m=>m.inicio!=null && m.inicio<s.fin && m.fin>s.inicio));
+}
+function confirmarSugerencia(i){
+  const s=E.sugerencias[i]; if(!s) return;
+  mutar(()=>crearMarca(E.ev,"c6.pertinente",{inicio:s.inicio, fin:s.fin}));
+  recordar("c6.pertinente");
+  recalcularSugerencias(); pintarEval(); destacar("c6");
+}
+function descartarSugerencia(i){
+  const s=E.sugerencias[i]; if(!s) return;
+  E.descartadas.add(s.inicio+":"+s.fin);
+  recalcularSugerencias(); pintarLienzo();
+}
+
+/* ---------- aplicar evidencias ---------- */
+function recordar(id){
+  E.prefs.recientes=[id, ...E.prefs.recientes.filter(x=>x!==id)].slice(0,5);
+  guardarPrefs();
+}
+function aplicar(id, shift){
+  if(E.soloLectura) return;
+  if(!E.sel){ aviso("Primero selecciona un fragmento, un signo, un espacio o un párrafo."); return; }
+  const m=mutar(()=>crearMarca(E.ev, id, E.sel, {caracteristica:E.prefs.caracteristica, shift}));
+  if(!m){ E.deshacer.pop(); aviso("Esa evidencia no se puede anclar a lo que seleccionaste."); return; }
+  recordar(id);
+  E.sel=null; E.tipoSel=null;
+  recalcularSugerencias();
+  pintarEval();
+  destacar(EVI[id].crit);
+}
+function destacar(cid){
+  const c=$("card-"+cid); if(!c) return;
+  c.classList.remove("dest"); void c.offsetWidth; c.classList.add("dest");
+  if(c.scrollIntoView) c.scrollIntoView({block:"nearest"});
+}
+
+/* ---------- lienzo ---------- */
+/* Un clic dentro del texto abre la ventana solo de marcas cortas. Las largas
+   (una razón, una postura) se abren desde su número, su barra o el panel,
+   para que no impidan marcar una tilde que quede dentro de ellas. */
+const LARGO_CLIC = 40;
+function estiloSegmento(ms){
+  let st=""; const errs=[];
+  ms.forEach(m=>{
+    const e=EVI[m.evidencia], f=FAMILIAS[CRIT[e.crit].fam];
+    if(e.pol==="+" && !st.includes("background")) st+="background:rgba("+f.rgb+",.17);";
+    if(e.pol==="-") errs.push({f, grave:m.gravedad==="grave"||m.gravedad==="compromete"||m.gravedad==="impide"||m.gravedad==="releer"});
+  });
+  if(errs.length){
+    const a=errs[0];
+    st+="text-decoration:underline wavy "+a.f.color+";text-decoration-thickness:"+(a.grave?"2.4px":"1.4px")+";text-underline-offset:4px;text-decoration-skip-ink:none;";
+    if(errs.length>1) st+="box-shadow:inset 0 -2px 0 "+errs[1].f.color+";";
+  }
+  return st;
+}
+/* Construye el HTML del texto con sus marcas. Lo usan la pantalla y el PDF. */
+function htmlTexto(ev, op){
+  op=op||{};
+  const T=ev.texto, nums=numerar(ev);
+  let ms=op.marcas===false ? [] : ordenarMarcas(ev.marcas);
+  if(op.aislado) ms=ms.filter(m=>EVI[m.evidencia].crit===op.aislado);
+  const rangos=ms.filter(m=>m.punto==null), puntos=ms.filter(m=>m.punto!=null);
+  const sel=op.sel||null, sugs=op.sugerencias||[];
+  let html="";
+  ev.parrafos.forEach((p,pi)=>{
+    const cortes=new Set([p.inicio,p.fin]);
+    const dentro=(a,b)=>a<p.fin && b>p.inicio;
+    // Una marca que cubre el párrafo entero se dibuja como barra al margen:
+    // subrayar un párrafo completo ensucia la lectura y tapa las marcas finas.
+    const deParrafo=rangos.filter(m=>m.inicio<=p.inicio && m.fin>=p.fin);
+    const rangosP=rangos.filter(m=>!deParrafo.includes(m));
+    rangosP.forEach(m=>{ if(dentro(m.inicio,m.fin)){ cortes.add(Math.max(p.inicio,m.inicio)); cortes.add(Math.min(p.fin,m.fin)); } });
+    puntos.forEach(m=>{ if(m.punto>=p.inicio && m.punto<=p.fin) cortes.add(m.punto); });
+    if(sel && sel.punto==null && dentro(sel.inicio,sel.fin)){ cortes.add(Math.max(p.inicio,sel.inicio)); cortes.add(Math.min(p.fin,sel.fin)); }
+    if(sel && sel.punto!=null && sel.punto>=p.inicio && sel.punto<=p.fin) cortes.add(sel.punto);
+    sugs.forEach(s=>{ if(dentro(s.inicio,s.fin)){ cortes.add(s.inicio); cortes.add(s.fin); } });
+    const cs=[...cortes].sort((a,b)=>a-b);
+    const inserciones=pos=>{
+      let h="";
+      if(op.numeros!==false) rangos.forEach(m=>{ if(m.fin===pos && m.fin>p.inicio && m.fin<=p.fin) h+='<sup class="num" data-m="'+m.id+'">'+nums[m.id]+'</sup>'; });
+      puntos.forEach(m=>{
+        if(m.punto!==pos || m.punto<p.inicio || m.punto>p.fin) return;
+        const f=FAMILIAS[CRIT[EVI[m.evidencia].crit].fam];
+        h+='<span class="punto" data-m="'+m.id+'" style="color:'+f.color+'" title="'+esc(EVI[m.evidencia].nom)+'">‸</span>';
+        if(op.numeros!==false) h+='<sup class="num" data-m="'+m.id+'">'+nums[m.id]+'</sup>';
+      });
+      if(sel && sel.punto===pos) h+='<span class="punto sel-punto" style="color:var(--tinta-3)">‸</span>';
+      return h;
+    };
+    let cuerpo="";
+    for(let i=0;i<cs.length-1;i++){
+      const a=cs[i], b=cs[i+1];
+      cuerpo+=inserciones(a);
+      if(b<=a) continue;
+      const cubren=rangosP.filter(m=>m.inicio<=a && m.fin>=b);
+      const cortas=cubren.filter(m=>m.fin-m.inicio<=LARGO_CLIC);
+      const enSel = sel && sel.punto==null && sel.inicio<=a && sel.fin>=b;
+      const si = sugs.findIndex(s=>s.inicio<=a && s.fin>=b);
+      let cls="t"; if(cortas.length) cls+=" m"; if(enSel) cls+=" s"; if(si>=0) cls+=" sug";
+      const tit=cubren.map(m=>EVI[m.evidencia].nom+(m.comentario?": "+m.comentario:"")).join(" · ");
+      cuerpo+='<span class="'+cls+'" data-o="'+a+'"'+
+        (cubren.length?' data-m="'+cubren.map(m=>m.id).join(",")+'"':'')+
+        (si>=0?' data-sug="'+si+'"':'')+
+        (cubren.length?' style="'+estiloSegmento(cubren)+'"':'')+
+        (tit?' title="'+esc(tit)+'"':'')+'>'+esc(T.slice(a,b))+'</span>';
+    }
+    cuerpo+=inserciones(cs[cs.length-1]);
+    const barras=deParrafo.map((m,k)=>{
+      const e=EVI[m.evidencia], f=FAMILIAS[CRIT[e.crit].fam];
+      return '<span class="barra" data-m="'+m.id+'" style="left:'+(-9-6*k)+'px;border-left:3px '+(e.pol==="+"?"solid":"dashed")+' '+f.color+'" title="'+esc(e.nom+(m.comentario?": "+m.comentario:""))+'"></span>';
+    }).join("");
+    const pil = op.impresion ? "" : '<button class="pil'+(sel&&sel.punto==null&&sel.inicio===p.inicio&&sel.fin===p.fin?" on":"")+'" data-par="'+pi+'" contenteditable="false" tabindex="-1" aria-label="Seleccionar el párrafo '+(pi+1)+'" title="Seleccionar el párrafo">¶</button>';
+    html+='<p class="par" data-p="'+pi+'">'+pil+barras+cuerpo+'</p>';
+  });
+  return html;
+}
+function pintarLienzo(){
+  if(!E.ev) return;
+  $("lienzo").innerHTML=htmlTexto(E.ev,{
+    sel:E.sel, sugerencias:E.detector?E.sugerencias:[],
+    numeros:E.prefs.numeros, marcas:E.prefs.marcas, aislado:E.aislado
+  });
+}
+function iluminarMarca(id){
+  const n=[...$("lienzo").querySelectorAll("[data-m]")].find(x=>x.dataset.m.split(",").includes(id));
+  if(!n) return;
+  if(n.scrollIntoView) n.scrollIntoView({block:"center", behavior:"smooth"});
+  n.classList.remove("flash"); void n.offsetWidth; n.classList.add("flash");
+}
+
+/* ---------- ventana de una marca ---------- */
+function opcionesEvidencia(actual){
+  const e0=EVI[actual];
+  let h="";
+  RUBRICA.forEach(c=>{
+    const ops=CATALOGO.filter(e=>e.crit===c.id && !e.general && e.ancla===e0.ancla);
+    if(!ops.length) return;
+    h+='<optgroup label="'+esc(c.corto)+'">'+ops.map(e=>'<option value="'+e.id+'"'+(e.id===actual?" selected":"")+'>'+(e.pol==="+"?"✓ ":"✕ ")+esc(e.nom)+'</option>').join("")+'</optgroup>';
+  });
+  return h;
+}
+function abrirPop(ids, ancla){
+  if(E.soloLectura){
+    // en solo lectura se ve la marca, sin editarla
+  }
+  E.popIds=ids.filter(id=>E.ev.marcas.some(m=>m.id===id));
+  if(!E.popIds.length) return;
+  pintarPop(ancla);
+}
+function pintarPop(ancla){
+  const pop=$("pop"), nums=numerar(E.ev);
+  const ro=E.soloLectura;
+  let h="";
+  E.popIds.forEach(id=>{
+    const m=E.ev.marcas.find(x=>x.id===id); if(!m) return;
+    const e=EVI[m.evidencia];
+    h+='<div class="bloque" data-id="'+m.id+'"><div class="cab-pop">'+
+      '<i class="'+(e.pol==="+"?"ico-ok":"ico-mal")+'">'+(e.pol==="+"?"✓":"✕")+'</i>'+
+      '<b>'+nums[m.id]+'. '+esc(e.nom)+'</b></div>'+
+      '<div class="frag">«'+esc(fragmentoDe(E.ev,m,80))+'»</div>'+
+      '<div style="font-size:11.5px;color:var(--tinta-3);margin-top:3px">'+esc(CRIT[e.crit].corto)+' · párrafo '+m.parrafo+'</div>';
+    if(!ro){
+      h+='<label>Evidencia</label><select data-campo="evidencia">'+opcionesEvidencia(m.evidencia)+'</select>';
+      if(e.carac) h+='<label>Característica</label><select data-campo="caracteristica">'+CARACTERISTICAS.map(c=>'<option value="'+c.id+'"'+(c.id===m.caracteristica?" selected":"")+'>'+c.nom+'</option>').join("")+'</select>';
+      if(e.grav) h+='<label>Gravedad</label><select data-campo="gravedad">'+GRAVEDADES[e.grav].map(g=>'<option value="'+g.v+'"'+(g.v===(m.gravedad||"")?" selected":"")+'>'+g.nom+'</option>').join("")+'</select>';
+      if(e.funcion) h+='<label>Función esperada del párrafo</label><select data-campo="funcion">'+FUNCIONES.map(f=>'<option value="'+f.v+'"'+(f.v===m.funcion?" selected":"")+'>'+f.nom+'</option>').join("")+'</select>';
+      h+='<label>Comentario</label><textarea data-campo="comentario" placeholder="Por qué lo marcaste (opcional)">'+esc(m.comentario)+'</textarea>'+
+        '<div style="display:flex;justify-content:flex-end;margin-top:7px"><button class="btn mini" data-borrar="'+m.id+'">Borrar marca</button></div>';
+    } else if(m.comentario){
+      h+='<div style="margin-top:6px">'+esc(m.comentario)+'</div>';
+    }
+    h+='</div>';
+  });
+  pop.innerHTML='<div class="cab-pop" style="margin-bottom:6px"><span style="font-size:12px;color:var(--tinta-3)">'+(E.popIds.length>1?E.popIds.length+" marcas en este fragmento":"Marca")+'</span><button class="btn mini fantasma cerrar" data-cerrar="1" aria-label="Cerrar">✕</button></div>'+h;
+  pop.hidden=false;
+  // posición: bajo el fragmento, dentro del contenedor
+  try{
+    const cont=pop.parentElement.getBoundingClientRect(), r=ancla.getBoundingClientRect();
+    let x=r.left-cont.left, y=r.bottom-cont.top+8;
+    x=Math.max(8, Math.min(x, cont.width-340));
+    pop.style.left=x+"px"; pop.style.top=y+"px";
+  }catch(e){}
+}
+function cerrarPop(){ E.popIds=null; const p=$("pop"); if(p){ p.hidden=true; p.innerHTML=""; } }
+function cambiarEnPop(id, campo, valor){
+  const m=E.ev.marcas.find(x=>x.id===id); if(!m) return;
+  if(campo==="comentario"){ m.comentario=valor; tocar(); pintarPanel(); return; }
+  mutar(()=>{
+    if(campo==="evidencia"){
+      const ant=EVI[m.evidencia], nue=EVI[valor];
+      m.evidencia=valor;
+      m.caracteristica = nue.carac ? (ant.carac ? m.caracteristica : E.prefs.caracteristica) : null;
+      m.gravedad = nue.grav ? (ant.grav===nue.grav ? m.gravedad : nue.gdef) : null;
+      m.funcion = nue.funcion ? (m.funcion || funcionPorPosicion(E.ev, m.parrafo-1)) : null;
+    } else m[campo]=valor;
+  });
+  pintarLienzo(); pintarPanel(); pintarPaleta();
+  const ancla=[...$("lienzo").querySelectorAll("[data-m]")].find(x=>x.dataset.m.split(",").includes(id));
+  if(ancla) pintarPop(ancla); else cerrarPop();
+}
+function borrarMarca(id){
+  mutar(()=>{ E.ev.marcas=E.ev.marcas.filter(m=>m.id!==id); });
+  cerrarPop();
+  recalcularSugerencias();
+  pintarEval();
+}
+
+/* =========================================================================
+   7. INTERFAZ · paleta, panel de rúbrica y cabecera
+   ========================================================================= */
+function icono(pol){ return pol==="+" ? '<i class="ico-ok" aria-label="acierto">✓</i>' : '<i class="ico-mal" aria-label="error">✕</i>'; }
+
+function botonEvidencia(e, cls){
+  const k=ATAJO_DE[e.id];
+  return '<button class="'+(cls||"ev")+'" data-evi="'+e.id+'" title="'+esc(e.nom)+(k?" · tecla "+k:"")+'">'+icono(e.pol)+'<span>'+esc(e.nom)+'</span>'+(k?'<span class="k">'+k+'</span>':'')+'</button>';
+}
+function descripcionSel(){
+  const T=E.ev.texto, s=E.sel;
+  if(s.punto!=null){
+    const antes=T.slice(Math.max(0,s.punto-24), s.punto).replace(/^\S*\s/,"");
+    return 'Espacio después de <q>'+esc(antes)+'</q>';
+  }
+  if(E.tipoSel==="parrafo") return 'Párrafo '+(parrafoDe(E.ev.parrafos,s.inicio)+1);
+  const f=T.slice(s.inicio,s.fin).replace(/\s+/g," ");
+  return (E.tipoSel==="signo"?"Signo ":"")+'<q>'+esc(f.length>90?f.slice(0,89)+"…":f)+'</q>';
+}
+
+function pintarPaleta(){
+  if(!E.ev) return;
+  const cuerpo=$("palCuerpo");
+  $("filtros").querySelectorAll("button").forEach(b=>b.classList.toggle("on", b.dataset.f===E.prefs.filtro));
+  const todas=[...E.ev.marcas, ...E.ev.generales];
+  $("cOk").textContent=todas.filter(m=>EVI[m.evidencia].pol==="+").length;
+  $("cMal").textContent=todas.filter(m=>EVI[m.evidencia].pol==="-").length;
+  $("bSugerir").textContent=E.detector?"Ocultar sugerencias":"Sugerir marcadores";
+  pintarReferencia();
+  $("bFijar").textContent=E.palFijada?"Cerrar paleta":"Abrir paleta";
+  $("chkNum").checked=E.prefs.numeros; $("chkMarcas").checked=E.prefs.marcas;
+  const abierta = !E.soloLectura && (E.sel || E.palFijada);
+  cuerpo.hidden=!abierta;
+  if(!abierta){ cuerpo.innerHTML=""; return; }
+
+  let h="";
+  if(E.sel) h+='<div class="pal-sel"><span>'+descripcionSel()+'</span><span style="margin-left:auto;font-size:11.5px">Esc para cancelar</span></div>';
+  else h+='<p class="pal-vacia">Selecciona una palabra, una frase o un signo; haz clic en un espacio para marcar un hueco, o en <kbd>¶</kbd> para tomar el párrafo entero.</p>';
+
+  const seccionesVisibles=SECCIONES.filter(s=>E.prefs.filtro==="todo"||s.id===E.prefs.filtro);
+  const critVisibles=new Set(seccionesVisibles.flatMap(s=>s.crits));
+
+  const rec=E.prefs.recientes.filter(id=>EVI[id]&&!EVI[id].general);
+  if(rec.length) h+='<div class="franja"><span class="lab">Recientes</span>'+rec.map((id,i)=>{
+    const e=EVI[id]; return '<button class="chip" data-evi="'+id+'" title="Tecla '+(i+1)+'">'+icono(e.pol)+esc(e.nom)+' <span class="k">'+(i+1)+'</span></button>';
+  }).join("")+'</div>';
+
+  if(E.sel && E.tipoSel){
+    const sug=(SUGERIDAS[E.tipoSel]||[]).map(id=>EVI[id]).filter(e=>critVisibles.has(e.crit) && !rec.includes(e.id));
+    if(sug.length) h+='<div class="franja"><span class="lab">Sugeridas</span>'+sug.map(e=>botonEvidencia(e,"chip")).join("")+'</div>';
+  }
+
+  h+='<div class="cols" data-n="'+seccionesVisibles.length+'">';
+  seccionesVisibles.forEach(s=>{
+    h+='<div class="col"><h4>'+s.nom+'</h4>';
+    s.crits.forEach(cid=>{
+      const c=CRIT[cid], f=FAMILIAS[c.fam];
+      const evs=CATALOGO.filter(e=>e.crit===cid && !e.general);
+      h+='<div class="grupo" style="border-color:'+f.color+'"><div class="gt" style="color:'+f.color+'">'+esc(c.corto)+'</div>';
+      if(cid==="c2") h+='<div class="caracs" role="group" aria-label="Característica">'+CARACTERISTICAS.map(k=>'<button data-carac="'+k.id+'" class="'+(E.prefs.caracteristica===k.id?"on":"")+'">'+k.nom+'</button>').join("")+'</div>';
+      h+=evs.map(e=>botonEvidencia(e)).join("");
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  if(E.sel) h+='<p class="pal-vacia" style="margin-top:6px">Mayúscula + clic, o Mayúscula + tecla, crea la marca con la gravedad aumentada.</p>';
+  cuerpo.innerHTML=h;
+}
+
+/* ---------- texto base y resumen, para consultar mientras se marca ---------- */
+function htmlParrafos(t){
+  const x=String(t||"").trim();
+  return x ? x.split(/\n\s*\n/).map(p=>'<p>'+esc(p)+'</p>').join("") : '<p class="ref-vacio">No se pegó este texto.</p>';
+}
+function pintarReferencia(){
+  const mat=materialDe(E.ev), b=$("bReferencia"), r=$("referencia");
+  b.hidden=!mat;
+  if(!mat){ r.hidden=true; r.innerHTML=""; return; }
+  b.textContent=E.verReferencia?"Ocultar texto base":"Texto base";
+  b.classList.toggle("pri", E.verReferencia);
+  r.hidden=!E.verReferencia;
+  if(!E.verReferencia){ r.innerHTML=""; return; }
+  if(r.dataset.mat===mat.id && r.innerHTML) return;   // no reinicia el desplazamiento
+  r.dataset.mat=mat.id;
+  r.innerHTML='<div class="ref-col"><h4><span>Texto base</span><span>'+esc(mat.titulo)+'</span></h4><div class="ref-txt">'+htmlParrafos(mat.fuente)+'</div></div>'+
+    '<div class="ref-col"><h4><span>Resumen de la IA</span><span>'+contarPalabras(mat.resumen||"")+' palabras</span></h4><div class="ref-txt">'+htmlParrafos(mat.resumen)+'</div></div>';
+}
+
+/* ---------- panel de rúbrica ---------- */
+function subtotal(ev, fam){
+  let s=0, m=0;
+  RUBRICA.filter(c=>c.fam===fam).forEach(c=>{ const d=ev.decisiones[c.id]; m+=c.pts.experto; if(d&&d.nivel) s+=c.pts[d.nivel]; });
+  return {s, m};
+}
+function conteoCrit(ev, cid){
+  const ms=[...marcasDe(ev,cid), ...generalesDe(ev,cid)];
+  return {ok:ms.filter(m=>EVI[m.evidencia].pol==="+").length, mal:ms.filter(m=>EVI[m.evidencia].pol==="-").length};
+}
+function pintarPanel(){
+  const p=$("panel"), ev=E.ev; if(!ev) return;
+  const cerrado=E.prefs.panelCerrado && window.innerWidth>900;
+  $("vEval").classList.toggle("panel-cerrado", cerrado);
+  if(cerrado){
+    p.innerHTML='<div class="franja-panel"><button class="btn mini" data-panel="abrir" title="Abrir la rúbrica">◂</button>'+
+      RUBRICA.map(c=>{
+        const d=ev.decisiones[c.id], k=conteoCrit(ev,c.id);
+        return '<div class="fp" data-ir-a="'+c.id+'" style="border-color:'+FAMILIAS[c.fam].color+'" title="'+esc(c.corto)+'"><b>'+(d.nivel?NOMNIV[d.nivel].charAt(0):"—")+'</b>'+k.ok+'·'+k.mal+'</div>';
+      }).join("")+'</div>';
+    return;
+  }
+  const nums=numerar(ev), ro=E.soloLectura;
+  let h='<div class="panel-cab"><h2>Rúbrica</h2>'+(window.innerWidth>900?'<button class="btn mini" data-panel="cerrar" title="Contraer el panel">▸</button>':'<button class="btn mini" data-panel="movil">Cerrar</button>')+'</div><div class="panel-cuerpo">';
+  Object.keys(FAMILIAS).forEach(fk=>{
+    const f=FAMILIAS[fk], st=subtotal(ev,fk);
+    h+='<div class="desc"><div class="desc-cab" style="border-color:'+f.color+'"><h3 style="color:'+f.color+'">'+esc(f.nom)+'</h3><span class="pt">'+fmt(st.s)+' / '+fmt(st.m)+'</span></div>';
+    RUBRICA.filter(c=>c.fam===fk).forEach(c=>{
+      const d=ev.decisiones[c.id], sg=sugerir(ev,c.id), k=conteoCrit(ev,c.id), ab=E.abiertos.has(c.id);
+      h+='<div class="crit'+(ab?" abierto":"")+'" id="card-'+c.id+'">'+
+        '<button class="crit-cab" data-toggle="'+c.id+'" aria-expanded="'+ab+'"><span class="flecha">▸</span><span class="nom">'+esc(c.nom)+'</span>'+
+        '<span class="cnt"><span><i class="ico-ok">✓</i>'+k.ok+'</span><span><i class="ico-mal">✕</i>'+k.mal+'</span></span></button>'+
+        '<div class="sugerido">'+(sg.nivel?'Sugerido: <b>'+NOMNIV[sg.nivel]+'</b> · ':'')+esc(sg.razon)+'</div>'+
+        '<div class="niveles" role="group" aria-label="Nivel">';
+      NIVELES.forEach(n=>{
+        const act=d.nivel===n;
+        h+='<button class="niv'+(act?" act":"")+(sg.nivel===n&&!act?" sug":"")+'" data-c="'+c.id+'" data-n="'+n+'"'+(ro?" disabled":"")+
+          (act?' style="background:'+f.color+';border-color:'+f.color+'"':'')+' aria-pressed="'+act+'">'+NOMNIV[n]+'<small>'+fmt(c.pts[n])+'</small></button>';
+      });
+      h+='</div>';
+      // Nivel decidido con el texto literal de la rúbrica, siempre a la vista
+      if(d.nivel) h+='<div class="decidido"><div class="dec-cab" style="color:'+f.color+'"><b>'+NOMNIV[d.nivel]+'</b><span>'+fmt(c.pts[d.nivel])+' / '+fmt(c.pts.experto)+'</span></div><p>'+esc(c.d[d.nivel])+'</p></div>';
+      if(ab){
+        h+='<div class="crit-det">';
+        if(c.id==="c2"){
+          const est=estadoCaracteristicas(ev);
+          h+='<div class="car-est">'+est.map(x=>'<span>'+esc(x.nom)+': <b style="color:'+(x.estado==="completa"?"var(--ok)":x.estado==="parcial"?"#B45309":"var(--mal)")+'">'+x.estado+'</b></span>').join("")+'</div>';
+        }
+        const lista=[...ordenarMarcas(marcasDe(ev,c.id)).map(m=>({m, g:false})), ...generalesDe(ev,c.id).map(g=>({m:g, g:true}))];
+        if(lista.length){
+          h+='<ul class="evis">';
+          lista.forEach(({m,g})=>{
+            const e=EVI[m.evidencia], abierto=E.evAbierta===m.id;
+            h+='<li><div class="fila" data-evid="'+m.id+'"'+(g?' data-general="1"':'')+'>'+icono(e.pol)+
+              '<span class="n">'+(g?"·":nums[m.id])+'</span><span>'+esc(e.nom)+(m.caracteristica?' · '+esc(CARAC[m.caracteristica].nom.toLowerCase()):'')+
+              (m.gravedad?' · '+esc((GRAVEDADES[e.grav].find(x=>x.v===m.gravedad)||{}).nom||"").toLowerCase():'')+
+              (!g?' <q>'+esc(fragmentoDe(ev,m,48))+'</q>':'')+'</span>'+
+              (g&&!ro?'<button class="btn mini fantasma" data-borrarg="'+m.id+'" style="margin-left:auto" aria-label="Quitar">✕</button>':'')+'</div>';
+            if(abierto && !ro) h+='<textarea data-coment="'+m.id+'" placeholder="Explica por qué (opcional)">'+esc(m.comentario)+'</textarea>';
+            else if(m.comentario) h+='<div class="coment">'+esc(m.comentario)+'</div>';
+            h+='</li>';
+          });
+          h+='</ul>';
+        }
+        h+='<div class="acc-crit">';
+        if(lista.some(x=>!x.g)) h+='<button class="btn mini" data-aislar="'+c.id+'">'+(E.aislado===c.id?"Ver todas las marcas":"Ver solo estas en el texto")+'</button>';
+        if(!ro && c.id==="c1") h+='<button class="btn mini" data-general="c1.ausente">+ Postura no identificable</button>';
+        if(!ro && c.id==="c2") h+='<select class="btn mini" data-general-c2><option value="">+ Característica ausente…</option>'+CARACTERISTICAS.map(k=>'<option value="'+k.id+'">'+k.nom+'</option>').join("")+'</select>';
+        h+='</div>';
+        if(!ro && d.nivel && sg.nivel && d.nivel!==sg.nivel){
+          h+='<div class="desvio"><label for="dv-'+c.id+'">¿Por qué te apartas de la sugerencia? (opcional, no se imprime)</label><textarea id="dv-'+c.id+'" data-desvio="'+c.id+'">'+esc(d.motivoDesvio)+'</textarea></div>';
+        }
+        h+='</div>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  h+=htmlRecomendaciones(ev, ro);
+  h+='<div class="obs" style="margin-top:18px"><h3 style="font-size:13.5px;margin-bottom:6px">Observaciones del evaluador</h3><textarea id="obs"'+(ro?" readonly":"")+' placeholder="Salen en el PDF, al final.">'+esc(ev.observaciones)+'</textarea></div>';
+  h+='</div>';
+  const scroll=p.scrollTop;
+  p.innerHTML=h;
+  p.scrollTop=scroll;
+  $("btnPanelMovil").textContent="Rúbrica · "+fmt(totalDe(ev).suma);
+}
+function htmlRecomendaciones(ev, ro){
+  const rs=recomendaciones(ev);
+  let h='<div class="bloque-rec"><h3>Recomendaciones para el estudiante</h3>';
+  if(!rs.length){
+    const t=totalDe(ev);
+    h+='<p style="font-size:12.5px;color:var(--tinta-3);margin:4px 0 0">'+(t.decididos? "Todos los criterios decididos están en Experto.":"Aparecen a medida que decides niveles por debajo de Experto.")+'</p></div>';
+    return h;
+  }
+  const bloque=(tit, arr)=> arr.length ? '<h4>'+tit+'</h4>'+arr.map(r=>
+    '<label class="rec'+(r.incluida?"":" fuera")+'"><input type="checkbox" data-rec="'+r.crit+'"'+(r.incluida?" checked":"")+(ro?" disabled":"")+'>'+
+    '<span class="rt"><b style="color:'+FAMILIAS[CRIT[r.crit].fam].color+'">'+esc(CRIT[r.crit].corto)+' · '+NOMNIV[r.nivel]+'</b>'+esc(r.texto)+'</span></label>').join("") : "";
+  h+=bloque("Lo que más subiría tu puntaje", rs.filter(r=>r.top));
+  h+=bloque("Otros aspectos para revisar", rs.filter(r=>!r.top));
+  return h+'</div>';
+}
+
+/* ---------- cabecera ---------- */
+function pintarCabecera(){
+  const enEval=E.vista==="eval" && E.ev;
+  $("cabTotal").hidden=!enEval;
+  $("bGuardar").hidden=!enEval || E.soloLectura;
+  $("bPdf").hidden=!enEval;
+  $("bNueva").hidden=!enEval;
+  $("avisoLectura").hidden=!(enEval && E.soloLectura);
+  if(enEval && E.soloLectura) $("avisoLectura").textContent="Evaluación de ejemplo · solo lectura";
+  if(!enEval) return;
+  const t=totalDe(E.ev);
+  $("cifra").textContent=fmt(t.suma);
+  $("sobre").innerHTML="sobre "+fmt(MAXTOTAL)+(t.faltan?"<br>"+t.decididos+" de "+RUBRICA.length+" criterios decididos":"<br>evaluación completa");
+}
+function pintarEval(){
+  pintarCabecera(); pintarPaleta(); pintarLienzo(); pintarPanel();
+}
+
+/* =========================================================================
+   8. APLICACIÓN · vistas, ventanas, PDF, eventos y arranque
+   ========================================================================= */
+function mostrar(v){
+  E.vista=v;
+  $("vEntrada").hidden = v!=="entrada";
+  $("vEval").hidden = v!=="eval";
+  cerrarPop();
+  if(v==="entrada"){ E.ev=null; E.soloLectura=false; E.sel=null; E.aislado=null; E.detector=false; pintarEntrada(); }
+  pintarCabecera();
+  if(typeof window.scrollTo==="function") try{ window.scrollTo(0,0); }catch(e){}
+}
+function fechaCorta(iso){
+  try{ return new Date(iso).toLocaleString("es-CO",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+  catch(e){ return String(iso).slice(0,16).replace("T"," "); }
+}
+
+/* ---------- entrada ---------- */
+function actualizarContador(){
+  const nz=normalizarTexto($("inTexto").value);
+  const n=contarPalabras(nz.texto), p=nz.texto?separarParrafos(nz.texto).length:0;
+  let h=esc(n+(n===1?" palabra":" palabras")+" · "+p+(p===1?" párrafo":" párrafos"));
+  if(n>0 && (n<290||n>460)) h+=' · <span style="color:#B45309">fuera del rango de la prueba</span>';
+  if(nz.unidas) h+=' · <span style="color:var(--tinta-3)">'+nz.unidas+' línea(s) cortada(s) se unirán</span>';
+  $("contador").innerHTML=h;
+  $("bEvaluar").disabled = n<40;
+}
+function pintarEntrada(){
+  actualizarContador();
+  pintarMateriales();
+  $("bloqueDesbloquear").hidden = !(E.cifrado && !E.desbloqueado);
+  $("bloqueEjemplos").hidden = !E.publicos.length;
+  $("listaEjemplos").innerHTML = E.publicos.map((ev,i)=>
+    '<button class="item-ej" data-ejemplo="'+i+'"><span>'+esc(ev.etiquetaPublica||"Ejemplo "+(i+1))+'</span><small>'+fmt(totalDe(ev).suma)+'</small></button>').join("");
+  const rec=E.historial.slice(0,5);
+  $("bloqueRecientes").hidden=!rec.length;
+  $("listaRecientes").innerHTML = rec.map(ev=>
+    '<button class="item-ej" data-abrir="'+ev.id+'"><span>'+esc(ev.estudiante||ev.etiquetaPublica||"Sin nombre")+'<br><small>'+fechaCorta(ev.modificada)+'</small></span><small>'+fmt(totalDe(ev).suma)+'</small></button>').join("");
+}
+function pintarMateriales(elegido){
+  const sel=$("inMaterial");
+  sel.innerHTML='<option value="">Ninguna</option>'+E.materiales.map(m=>'<option value="'+m.id+'">'+esc(m.titulo)+'</option>').join("")+'<option value="nueva">Nueva prueba…</option>';
+  const id = elegido!==undefined ? elegido : (E.materiales.some(m=>m.id===E.prefs.ultimoMaterial) ? E.prefs.ultimoMaterial : "");
+  sel.value=id;
+  cargarMaterialEnCampos(id);
+}
+function cargarMaterialEnCampos(id){
+  const m=E.materiales.find(x=>x.id===id);
+  $("inMatTitulo").value = m ? m.titulo : "";
+  $("inFuente").value = m ? m.fuente : "";
+  $("inResumen").value = m ? m.resumen : "";
+  resumenMaterial();
+}
+function resumenMaterial(){
+  const f=$("inFuente").value.trim(), r=$("inResumen").value.trim(), t=$("inMatTitulo").value.trim();
+  $("matSel").textContent = (f||r) ? "· "+(t||"prueba sin nombre")+(f&&r?"":f?" (solo texto base)":" (solo resumen)") : "· ninguna";
+}
+/* Devuelve el id de la prueba que corresponde a lo que hay en los campos:
+   la misma si no cambió, una nueva si se editó, null si están vacíos. Una
+   prueba ya usada nunca se sobrescribe: las evaluaciones viejas la conservan. */
+function resolverMaterial(){
+  const fuente=normalizarTexto($("inFuente").value).texto, resumen=normalizarTexto($("inResumen").value).texto;
+  if(!fuente && !resumen) return null;
+  let titulo=$("inMatTitulo").value.trim();
+  const igual=E.materiales.find(m=>mismoMaterial(m, fuente, resumen));
+  if(igual){
+    if(titulo && titulo!==igual.titulo){ igual.titulo=titulo; igual.modificada=ahora(); }
+    return igual.id;
+  }
+  if(!titulo) titulo=(fuente||resumen).split(/\s+/).slice(0,6).join(" ")+"…";
+  if(E.materiales.some(m=>m.titulo===titulo)) titulo+=" ("+new Date().toLocaleDateString("es-CO")+")";
+  const m={id:nuevoId("mat"), titulo, fuente, resumen, creada:ahora(), modificada:ahora()};
+  E.materiales.unshift(m);
+  return m.id;
+}
+function evaluarTexto(){
+  const nz=normalizarTexto($("inTexto").value);
+  if(contarPalabras(nz.texto)<40) return;
+  const ev=crearEvaluacion({texto:nz.texto, estudiante:$("inEstudiante").value.trim(), etiqueta:$("inEtiqueta").value.trim()});
+  ev.materialId=resolverMaterial();
+  E.prefs.ultimoMaterial=ev.materialId; guardarPrefs();
+  E.historial.unshift(ev); guardarTodo();
+  abrirEv(ev, false);
+  if(nz.unidas) aviso("Se unieron "+nz.unidas+" líneas cortadas antes de evaluar.");
+}
+function abrirEv(ev, soloLectura){
+  E.ev=ev; E.soloLectura=!!soloLectura; E.sel=null; E.tipoSel=null; E.deshacer=[];
+  E.aislado=null; E.detector=false; E.sugerencias=[]; E.descartadas=new Set(); E.evAbierta=null;
+  E.abiertos=new Set(); E.verReferencia=false;
+  mostrar("eval");
+  pintarEval();
+}
+function abrirPropia(id){ const ev=E.historial.find(x=>x.id===id); if(ev) abrirEv(ev,false); }
+
+/* ---------- ventanas ---------- */
+function ventana(html){
+  const v=document.createElement("div"); v.className="velo"; v.setAttribute("role","dialog"); v.setAttribute("aria-modal","true");
+  v.innerHTML='<div class="modal">'+html+'</div>';
+  v.addEventListener("click",e=>{ if(e.target===v) v.remove(); });
+  document.body.appendChild(v);
+  const f=v.querySelector("input,textarea,button.pri"); if(f) setTimeout(()=>f.focus(),0);
+  return v;
+}
+
+/* ---------- historial ---------- */
+function abrirHistorial(){
+  const filas = E.historial.length ? E.historial.map(ev=>{
+    const t=totalDe(ev);
+    return '<tr><td>'+fechaCorta(ev.modificada)+'</td>'+
+      '<td>'+(ev.estudiante?'<b>'+esc(ev.estudiante)+'</b><br>':'')+'<small style="color:var(--tinta-3)">'+esc(ev.etiquetaPublica||"sin etiqueta")+'</small></td>'+
+      '<td><small>'+esc((materialDe(ev)||{}).titulo||"—")+'</small></td>'+
+      '<td class="num">'+fmt(t.suma)+(t.faltan?'<br><small style="color:#B45309">'+t.decididos+'/12</small>':'')+'</td>'+
+      '<td><button class="vis'+(ev.visibilidad==="publica"?" pub":"")+'" data-vis="'+ev.id+'">'+(ev.visibilidad==="publica"?"Pública":"Privada")+'</button></td>'+
+      '<td class="num"><button class="btn mini" data-abrir="'+ev.id+'">Abrir</button> <button class="btn mini" data-borrar-ev="'+ev.id+'">Borrar</button></td></tr>';
+  }).join("") : '<tr><td colspan="6" class="vacio">Todavía no hay evaluaciones en este navegador.</td></tr>';
+  const pend = E.cifrado && !E.desbloqueado;
+  const v=ventana('<h2>Historial</h2>'+
+    '<p>Las evaluaciones se guardan solas en este navegador. <b>Guardar historial</b> descarga la aplicación con todas dentro: las públicas a la vista, el historial completo cifrado con tu contraseña. Renombra el archivo a <code>index.html</code> para subirlo.</p>'+
+    (!ALM.persistente?'<div class="alerta">Este navegador no permite guardar datos: lo que hagas se perderá al cerrar la pestaña. Descarga el historial antes de salir.</div>':'')+
+    (pend?'<div class="alerta">Esta página trae un historial cifrado que aún no has abierto. Desbloquéalo antes de guardar, para no perder lo que ya estaba publicado.</div>':'')+
+    '<table class="hist"><thead><tr><th>Modificada</th><th>Estudiante · etiqueta</th><th>Prueba</th><th style="text-align:right">Total</th><th>Visibilidad</th><th></th></tr></thead><tbody>'+filas+'</tbody></table>'+
+    (E.materiales.length ? '<h3 style="font-size:13.5px;margin:22px 0 6px">Pruebas guardadas</h3><table class="hist"><thead><tr><th>Nombre</th><th style="text-align:right">Evaluaciones</th><th></th></tr></thead><tbody>'+
+      E.materiales.map(m=>{ const n=E.historial.filter(ev=>ev.materialId===m.id).length;
+        return '<tr><td>'+esc(m.titulo)+'</td><td class="num">'+n+'</td><td class="num"><button class="btn mini" data-ver-mat="'+m.id+'">Ver</button> '+
+          (n?'':'<button class="btn mini" data-borrar-mat="'+m.id+'">Borrar</button>')+'</td></tr>'; }).join("")+'</tbody></table>' : '')+
+    '<div class="modal-pie">'+(pend?'<button class="btn" data-accion="desbloquear">Desbloquear historial</button>':'')+
+    '<button class="btn" data-accion="cerrar">Cerrar</button><button class="btn pri" data-accion="guardar-historial">Guardar historial</button></div>');
+  v.addEventListener("click", async e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.accion==="cerrar") v.remove();
+    if(b.dataset.accion==="desbloquear"){ v.remove(); await pedirDesbloqueo(); abrirHistorial(); }
+    if(b.dataset.accion==="guardar-historial"){ v.remove(); await guardarHistorial(); }
+    if(b.dataset.abrir){ v.remove(); abrirPropia(b.dataset.abrir); }
+    if(b.dataset.borrarEv){
+      if(!confirm("¿Borrar esta evaluación? Desaparece de la página publicada cuando subas el siguiente archivo, pero seguirá en el historial del repositorio.")) return;
+      borrarEvaluacion(b.dataset.borrarEv); v.remove(); abrirHistorial();
+    }
+    if(b.dataset.vis){ v.remove(); await cambiarVisibilidad(b.dataset.vis); abrirHistorial(); }
+    if(b.dataset.verMat){ verMaterial(b.dataset.verMat); }
+    if(b.dataset.borrarMat){
+      if(!confirm("¿Borrar esta prueba? Ninguna evaluación la usa.")) return;
+      E.materiales=E.materiales.filter(m=>m.id!==b.dataset.borrarMat);
+      if(!E.borradas.includes(b.dataset.borrarMat)) E.borradas.push(b.dataset.borrarMat);
+      guardarTodo(); v.remove(); abrirHistorial();
+    }
+  });
+}
+function verMaterial(id){
+  const m=E.materiales.find(x=>x.id===id); if(!m) return;
+  const usos=E.historial.filter(ev=>ev.materialId===id).length;
+  const v=ventana('<h2>'+esc(m.titulo)+'</h2><p>Guardada el '+fechaCorta(m.creada)+' · '+usos+(usos===1?' evaluación la usa.':' evaluaciones la usan.')+'</p>'+
+    '<div class="ver-mat"><div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Texto base · '+contarPalabras(m.fuente||"")+' palabras</h4><div class="ref-txt">'+htmlParrafos(m.fuente)+'</div></div>'+
+    '<div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Resumen de la IA · '+contarPalabras(m.resumen||"")+' palabras</h4><div class="ref-txt">'+htmlParrafos(m.resumen)+'</div></div></div>'+
+    '<div class="modal-pie"><button class="btn" data-m="usar">Usar en una evaluación nueva</button><button class="btn pri" data-m="cerrar">Cerrar</button></div>');
+  v.querySelector(".modal").style.maxWidth="1000px";
+  v.addEventListener("click",e=>{
+    const b=e.target.closest("[data-m]"); if(!b) return;
+    document.querySelectorAll(".velo").forEach(x=>x.remove());
+    if(b.dataset.m==="usar"){ if(E.vista!=="entrada") mostrar("entrada"); pintarMateriales(id); $("detMaterial").open=true; }
+  });
+}
+function borrarEvaluacion(id){
+  E.historial=E.historial.filter(x=>x.id!==id);
+  if(!E.borradas.includes(id)) E.borradas.push(id);
+  guardarTodo();
+  if(E.ev && E.ev.id===id) mostrar("entrada"); else if(E.vista==="entrada") pintarEntrada();
+}
+function pedirTexto(titulo, texto, valor){
+  return new Promise(res=>{
+    const v=ventana('<h2>'+titulo+'</h2><p>'+texto+'</p><div class="campo"><input type="text" id="vtx" value="'+esc(valor||"")+'"></div><div class="modal-pie"><button class="btn" data-r="no">Cancelar</button><button class="btn pri" data-r="si">Aceptar</button></div>');
+    v.addEventListener("click",e=>{ const b=e.target.closest("[data-r]"); if(!b) return; const val=v.querySelector("#vtx").value.trim(); v.remove(); res(b.dataset.r==="si"?val:null); });
+  });
+}
+function confirmar(titulo, html, siTexto){
+  return new Promise(res=>{
+    const v=ventana('<h2>'+titulo+'</h2>'+html+'<div class="modal-pie"><button class="btn" data-r="no">Cancelar</button><button class="btn pri" data-r="si">'+(siTexto||"Aceptar")+'</button></div>');
+    v.addEventListener("click",e=>{ const b=e.target.closest("[data-r]"); if(!b) return; v.remove(); res(b.dataset.r==="si"); });
+  });
+}
+async function cambiarVisibilidad(id){
+  const ev=E.historial.find(x=>x.id===id); if(!ev) return;
+  if(ev.visibilidad==="publica"){ ev.visibilidad="privada"; ev.modificada=ahora(); guardarTodo(); aviso("La evaluación volvió a ser privada."); return; }
+  if(!ev.etiquetaPublica){
+    const et=await pedirTexto("Etiqueta pública","Es lo único que verá el público para identificar esta evaluación. No uses el nombre del estudiante.","");
+    if(!et) return;
+    ev.etiquetaPublica=et;
+  }
+  const hall=buscarNombre(ev);
+  if(hall.length){
+    ventana('<h2>No se puede publicar todavía</h2><div class="alerta">El nombre del estudiante aparece en '+
+      unirLista([...new Set(hall.map(x=>x.donde))])+' ("'+esc(hall[0].parte)+'"). Quítalo de ahí antes de publicar.</div>'+
+      '<p>Si se trata de otra persona con el mismo nombre, borra el campo de nombre del estudiante o cámbialo, y vuelve a intentarlo.</p><div class="modal-pie"><button class="btn pri" onclick="this.closest(\'.velo\').remove()">Entendido</button></div>');
+    guardarTodo(); return;
+  }
+  if(!E.prefs.avisoPublico){
+    const ok=await confirmar("Publicar una evaluación",
+      '<p>Una evaluación pública queda en el historial del repositorio aunque luego la borres o la vuelvas privada. Revisa que el texto no contenga datos que identifiquen al estudiante.</p><p>Publicar textos de estudiantes, aunque sea sin nombre, conviene hacerlo con su autorización.</p>',"Publicar");
+    if(!ok) return;
+    E.prefs.avisoPublico=true; guardarPrefs();
+  }
+  ev.visibilidad="publica"; ev.modificada=ahora(); guardarTodo();
+  aviso("Será pública cuando subas el próximo archivo de historial.");
+}
+
+/* ---------- contraseña ---------- */
+function pedirDesbloqueo(){
+  return new Promise(res=>{
+    const v=ventana('<h2>Desbloquear historial</h2><p>Escribe la contraseña con la que guardaste el historial de esta página.</p>'+
+      '<div class="campo"><input type="password" id="pw" autocomplete="current-password"></div><div id="pwMsg"></div>'+
+      '<div class="modal-pie"><button class="btn" data-r="olvido" style="margin-right:auto">La olvidé</button><button class="btn" data-r="no">Cancelar</button><button class="btn pri" data-r="si">Desbloquear</button></div>');
+    const intentar=async()=>{
+      const pw=v.querySelector("#pw").value;
+      v.querySelector("#pwMsg").innerHTML='<div class="nota">Abriendo…</div>';
+      try{
+        const r=await descifrar(E.cifrado, pw);
+        const f=fusionar(E.historial, r.obj.historial, E.borradas, r.obj.borradas);
+        E.historial=f.historial; E.borradas=f.borradas; E.sesion=r.ses; E.desbloqueado=true;
+        E.materiales=fusionarMateriales(E.materiales, r.obj.materiales, E.borradas);
+        guardarTodo(); v.remove(); aviso("Historial desbloqueado: "+E.historial.length+" evaluaciones."); if(E.vista==="entrada") pintarEntrada(); res(true);
+      }catch(e){
+        v.querySelector("#pwMsg").innerHTML='<div class="alerta">'+(e.contrasena?"Esa contraseña no abre este historial.":"No se pudo abrir: "+esc(e.message))+'</div>';
+      }
+    };
+    v.addEventListener("keydown",e=>{ if(e.key==="Enter") intentar(); });
+    v.addEventListener("click",async e=>{
+      const b=e.target.closest("[data-r]"); if(!b) return;
+      if(b.dataset.r==="si") return intentar();
+      if(b.dataset.r==="olvido"){
+        const ok=await confirmar("Empezar un historial cifrado nuevo",'<div class="alerta">El historial cifrado que trae esta página no se podrá recuperar: el próximo archivo que guardes lo reemplazará. Las evaluaciones de este navegador se conservan.</div>',"Empezar de nuevo");
+        if(ok){ E.desbloqueado=true; E.sesion=null; v.remove(); res(true); }
+        return;
+      }
+      v.remove(); res(false);
+    });
+  });
+}
+function pedirNuevaContrasena(){
+  return new Promise(res=>{
+    const v=ventana('<h2>Contraseña del historial</h2><p>Cifra el historial completo, con los nombres de los estudiantes. El archivo es público, así que cualquiera puede intentar adivinarla sin límite: usa una frase de cuatro o más palabras. <b>Si la olvidas, el historial cifrado no se recupera.</b></p>'+
+      '<div class="campo"><label for="pw1">Contraseña</label><input type="password" id="pw1" autocomplete="new-password"></div>'+
+      '<div class="campo"><label for="pw2">Repítela</label><input type="password" id="pw2" autocomplete="new-password"></div><div id="pwMsg"></div>'+
+      '<div class="modal-pie"><button class="btn" data-r="no">Cancelar</button><button class="btn pri" data-r="si">Guardar</button></div>');
+    const msg=t=>{ v.querySelector("#pwMsg").innerHTML=t; };
+    v.querySelector("#pw1").addEventListener("input",e=>{
+      const n=e.target.value.length;
+      msg(n && n<16 ? '<div class="nota">Tiene '+n+' caracteres. Se recomiendan al menos 16.</div>' : "");
+    });
+    v.addEventListener("click",async e=>{
+      const b=e.target.closest("[data-r]"); if(!b) return;
+      if(b.dataset.r==="no"){ v.remove(); res(false); return; }
+      const a=v.querySelector("#pw1").value, c=v.querySelector("#pw2").value;
+      if(a.length<8){ msg('<div class="alerta">Usa al menos 8 caracteres.</div>'); return; }
+      if(a!==c){ msg('<div class="alerta">Las dos contraseñas no coinciden.</div>'); return; }
+      msg('<div class="nota">Preparando el cifrado…</div>');
+      try{ E.sesion=await nuevaSesionCifrado(a); E.desbloqueado=true; v.remove(); res(true); }
+      catch(err){ msg('<div class="alerta">Este navegador no ofrece cifrado en esta página. Ábrela desde su dirección https.</div>'); }
+    });
+  });
+}
+async function guardarHistorial(){
+  guardarTodo();
+  if(E.cifrado && !E.desbloqueado){ const ok=await pedirDesbloqueo(); if(!ok) return; }
+  if(!E.sesion){ const ok=await pedirNuevaContrasena(); if(!ok) return; }
+  try{
+    const paquete=await cifrar({v:1, historial:E.historial, borradas:E.borradas, materiales:E.materiales}, E.sesion);
+    const html=construirArchivo(FUENTE, capaPublica(E.historial), paquete);
+    descargar(nombreArchivo(), html, "text/html;charset=utf-8");
+    const pub=E.historial.filter(x=>x.visibilidad==="publica").length;
+    aviso("Historial descargado: "+E.historial.length+" evaluaciones, "+pub+" públicas. Renómbralo a index.html para subirlo.");
+  }catch(e){ aviso("No se pudo cifrar el historial: "+e.message); }
+}
+function descargar(nombre, contenido, tipo){
+  const b=new Blob([contenido],{type:tipo});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download=nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ---------- umbrales ---------- */
+function abrirUmbrales(){
+  const tit={c3:"Léxico",c5:"Puntuación",c6:"Marcadores discursivos",c7:"Relaciones léxicas y sintácticas",c8:"Progresión temática",c10:"Acentuación",c11:"Ortografía",c12:"Gramática"};
+  let cuerpo="";
+  Object.keys(tit).forEach(g=>{
+    cuerpo+='<h4 style="font-size:13px;margin:14px 0 4px">'+tit[g]+'</h4>';
+    Object.keys(REGLAS[g]).forEach(k=>{
+      cuerpo+='<div class="regla"><span>'+esc(ETIQ_REGLA[g+"."+k]||k)+'</span><input type="number" min="0" step="1" data-r="'+g+'.'+k+'" value="'+REGLAS[g][k]+'"></div>';
+    });
+  });
+  const v=ventana('<h2>Umbrales de sugerencia</h2><p>La rúbrica habla de fallas <em>puntuales</em> y errores <em>recurrentes</em> sin dar cifras; estas son las que usa la sugerencia. Los conteos se normalizan a '+REGLAS.base+' palabras. Cambiarlas no toca ningún nivel que ya hayas decidido.</p>'+cuerpo+
+    '<div class="modal-pie"><button class="btn" data-u="base" style="margin-right:auto">Restablecer</button><button class="btn" data-u="no">Cancelar</button><button class="btn pri" data-u="si">Guardar</button></div>');
+  v.addEventListener("click",e=>{
+    const b=e.target.closest("[data-u]"); if(!b) return;
+    if(b.dataset.u==="base"){ REGLAS=JSON.parse(JSON.stringify(REGLAS_BASE)); E.prefs.reglas=null; guardarPrefs(); v.remove(); abrirUmbrales(); if(E.ev) pintarPanel(); return; }
+    if(b.dataset.u==="si"){
+      v.querySelectorAll("[data-r]").forEach(i=>{ const [g,k]=i.dataset.r.split("."); const n=parseFloat(i.value); if(!isNaN(n)&&n>=0) REGLAS[g][k]=n; });
+      E.prefs.reglas=REGLAS; guardarPrefs(); if(E.ev) pintarPanel();
+    }
+    v.remove();
+  });
+}
+
+/* ---------- PDF ---------- */
+function construirImpresion(ev, conNombre){
+  const t=totalDe(ev), nums=numerar(ev), rs=recomendaciones(ev).filter(r=>r.incluida);
+  let h='<h1>Evaluación de escritura</h1><div class="meta">'+
+    [conNombre&&ev.estudiante?esc(ev.estudiante):"", ev.etiquetaPublica?esc(ev.etiquetaPublica):"", materialDe(ev)?"Prueba: "+esc(materialDe(ev).titulo):"", fechaCorta(ev.modificada), ev.palabras+" palabras", ev.parrafos.length+" párrafos"].filter(Boolean).join(" · ")+'</div>';
+  if(t.faltan) h+='<div class="adv">Evaluación incompleta: '+t.faltan+(t.faltan===1?" criterio sin decidir.":" criterios sin decidir.")+'</div>';
+  h+='<h2>Texto</h2><div class="texto-imp">'+htmlTexto(ev,{impresion:true, numeros:true})+'</div>';
+  h+='<h2>Resultado</h2><table><thead><tr><th>Criterio</th><th>Nivel</th><th class="n">Puntaje</th></tr></thead><tbody>';
+  Object.keys(FAMILIAS).forEach(fk=>{
+    const st=subtotal(ev,fk);
+    h+='<tr><td colspan="2" style="font-weight:600;color:'+FAMILIAS[fk].color+'">'+esc(FAMILIAS[fk].nom)+'</td><td class="n" style="font-weight:600">'+fmt(st.s)+' / '+fmt(st.m)+'</td></tr>';
+    RUBRICA.filter(c=>c.fam===fk).forEach(c=>{
+      const d=ev.decisiones[c.id];
+      h+='<tr><td style="padding-left:12pt">'+esc(c.nom)+(d.nivel?'<div style="color:#555;font-size:9pt;margin-top:2pt">'+esc(c.d[d.nivel])+'</div>':'')+'</td><td>'+(d.nivel?NOMNIV[d.nivel]:"Sin decidir")+'</td><td class="n">'+(d.nivel?fmt(c.pts[d.nivel]):"—")+' / '+fmt(c.pts.experto)+'</td></tr>';
+    });
+  });
+  h+='<tr><td colspan="2" style="font-weight:700">Total</td><td class="n" style="font-weight:700">'+fmt(t.suma)+' / '+fmt(MAXTOTAL)+'</td></tr></tbody></table>';
+  h+='<h2>Evidencias</h2>';
+  let alguna=false;
+  RUBRICA.forEach(c=>{
+    const ms=ordenarMarcas(marcasDe(ev,c.id)), gs=generalesDe(ev,c.id);
+    if(!ms.length && !gs.length) return;
+    alguna=true;
+    h+='<h3 style="color:'+FAMILIAS[c.fam].color+'">'+esc(c.corto)+'</h3>';
+    ms.forEach(m=>{ const e=EVI[m.evidencia];
+      h+='<div class="ev-imp">['+nums[m.id]+'] '+(e.pol==="+"?"✓":"✕")+' '+esc(e.nom)+(m.caracteristica?" ("+esc(CARAC[m.caracteristica].nom.toLowerCase())+")":"")+' — «'+esc(fragmentoDe(ev,m,70))+'»'+(m.comentario?'. '+esc(m.comentario):'')+'</div>'; });
+    gs.forEach(g=>{ const e=EVI[g.evidencia];
+      h+='<div class="ev-imp">'+(e.pol==="+"?"✓":"✕")+' '+esc(e.nom)+(g.caracteristica?": "+esc(CARAC[g.caracteristica].nom.toLowerCase()):"")+(g.comentario?'. '+esc(g.comentario):'')+'</div>'; });
+  });
+  if(!alguna) h+='<p>No se marcaron evidencias.</p>';
+  if(rs.length){
+    h+='<h2>Recomendaciones</h2>';
+    const top=rs.filter(r=>r.top), resto=rs.filter(r=>!r.top);
+    if(top.length) h+='<h3>Lo que más subiría tu puntaje</h3>'+top.map(r=>'<div class="rec-imp"><b>'+esc(CRIT[r.crit].corto)+'.</b> '+esc(r.texto)+'</div>').join("");
+    if(resto.length) h+='<h3>Otros aspectos para revisar</h3>'+resto.map(r=>'<div class="rec-imp"><b>'+esc(CRIT[r.crit].corto)+'.</b> '+esc(r.texto)+'</div>').join("");
+  }
+  if(ev.observaciones && ev.observaciones.trim()) h+='<h2>Observaciones del evaluador</h2><p style="white-space:pre-wrap">'+esc(ev.observaciones)+'</p>';
+  return h;
+}
+function imprimir(){
+  if(!E.ev) return;
+  guardarTodo();
+  $("impresion").innerHTML=construirImpresion(E.ev, !E.soloLectura);
+  try{ window.print(); }catch(e){}
+}
+
+/* ---------- eventos ---------- */
+function enlazar(){
+  $("inTexto").addEventListener("input", actualizarContador);
+  $("inMaterial").addEventListener("change", e=>{
+    const v=e.target.value;
+    if(v==="nueva"){ cargarMaterialEnCampos(null); $("inMatTitulo").focus(); }
+    else cargarMaterialEnCampos(v);
+  });
+  ["inFuente","inResumen","inMatTitulo"].forEach(id=>$(id).addEventListener("input", ()=>{
+    // al editar una prueba guardada, lo que se evalúe irá como prueba nueva
+    const sel=$("inMaterial"), m=E.materiales.find(x=>x.id===sel.value);
+    if(m && id!=="inMatTitulo" && !mismoMaterial(m, $("inFuente").value, $("inResumen").value)) sel.value="nueva";
+    if(sel.value==="" && ($("inFuente").value.trim() || $("inResumen").value.trim())) sel.value="nueva";
+    resumenMaterial();
+  }));
+  $("bReferencia").addEventListener("click", ()=>{ E.verReferencia=!E.verReferencia; pintarReferencia(); });
+  $("bEvaluar").addEventListener("click", evaluarTexto);
+  $("bHistorial").addEventListener("click", abrirHistorial);
+  $("bUmbrales").addEventListener("click", abrirUmbrales);
+  $("bNueva").addEventListener("click", ()=>{ guardarTodo(); $("inTexto").value=""; $("inEstudiante").value=""; $("inEtiqueta").value=""; mostrar("entrada"); });
+  $("bGuardar").addEventListener("click", ()=>{ guardarTodo(); aviso(ALM.persistente?"Evaluación guardada en este navegador.":"Guardada solo en esta sesión: descarga el historial antes de salir."); });
+  $("bPdf").addEventListener("click", imprimir);
+  $("bDesbloquear").addEventListener("click", pedirDesbloqueo);
+  $("btnPanelMovil").addEventListener("click", ()=>$("panel").classList.toggle("abierto-movil"));
+
+  $("vEntrada").addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.ejemplo!=null){ const ev=E.publicos[+b.dataset.ejemplo]; if(ev) abrirEv(ev, true); }
+    if(b.dataset.abrir) abrirPropia(b.dataset.abrir);
+  });
+
+  // paleta
+  $("filtros").addEventListener("click", e=>{ const b=e.target.closest("[data-f]"); if(!b) return; E.prefs.filtro=b.dataset.f; guardarPrefs(); pintarPaleta(); });
+  $("bDeshacer").addEventListener("click", deshacer);
+  $("bSugerir").addEventListener("click", ()=>{ E.detector=!E.detector; recalcularSugerencias(); pintarPaleta(); pintarLienzo();
+    if(E.detector) aviso(E.sugerencias.length? E.sugerencias.length+" posibles marcadores. Clic para confirmar, clic derecho para descartar." : "No se encontraron marcadores sin marcar."); });
+  $("chkNum").addEventListener("change", e=>{ E.prefs.numeros=e.target.checked; guardarPrefs(); pintarLienzo(); });
+  $("chkMarcas").addEventListener("change", e=>{ E.prefs.marcas=e.target.checked; guardarPrefs(); pintarLienzo(); });
+  $("bFijar").addEventListener("click", ()=>{ E.palFijada=!E.palFijada; pintarPaleta(); });
+  $("palCuerpo").addEventListener("mousedown", e=>{ if(e.target.closest("button")) e.preventDefault(); });
+  $("palCuerpo").addEventListener("click", e=>{
+    const c=e.target.closest("[data-carac]");
+    if(c){ E.prefs.caracteristica=c.dataset.carac; guardarPrefs(); pintarPaleta(); return; }
+    const b=e.target.closest("[data-evi]");
+    if(b) aplicar(b.dataset.evi, e.shiftKey);
+  });
+
+  // lienzo
+  const lz=$("lienzo");
+  lz.addEventListener("pointerdown", e=>{ E.tocando = e.pointerType==="touch"; });
+  lz.addEventListener("mouseup", e=>{ if(!E.tocando) setTimeout(()=>alSoltar(e),0); });
+  lz.addEventListener("touchend", e=>{ setTimeout(()=>alSoltar(e),30); });
+  lz.addEventListener("click", e=>{ const p=e.target.closest(".pil"); if(p){ e.preventDefault(); selParrafo(+p.dataset.par); } });
+  lz.addEventListener("contextmenu", e=>{ const s=e.target.closest(".t.sug"); if(s){ e.preventDefault(); descartarSugerencia(+s.dataset.sug); } });
+
+  // ventana de marca
+  const pop=$("pop");
+  pop.addEventListener("click", e=>{
+    if(e.target.closest("[data-cerrar]")) cerrarPop();
+    const b=e.target.closest("[data-borrar]"); if(b) borrarMarca(b.dataset.borrar);
+  });
+  pop.addEventListener("change", e=>{
+    const campo=e.target.dataset.campo; if(!campo || campo==="comentario") return;
+    cambiarEnPop(e.target.closest("[data-id]").dataset.id, campo, e.target.value);
+  });
+  pop.addEventListener("input", e=>{
+    if(e.target.dataset.campo!=="comentario") return;
+    const id=e.target.closest("[data-id]").dataset.id, m=E.ev.marcas.find(x=>x.id===id);
+    if(m){ m.comentario=e.target.value; tocar(); }
+  });
+  pop.addEventListener("focusout", e=>{ if(e.target.dataset && e.target.dataset.campo==="comentario") pintarPanel(); });
+
+  // panel
+  const panel=$("panel");
+  panel.addEventListener("click", e=>{
+    const t=e.target;
+    const pn=t.closest("[data-panel]");
+    if(pn){
+      if(pn.dataset.panel==="movil") panel.classList.remove("abierto-movil");
+      else { E.prefs.panelCerrado = pn.dataset.panel==="cerrar"; guardarPrefs(); pintarPanel(); }
+      return;
+    }
+    const ir=t.closest("[data-ir-a]");
+    if(ir){ E.prefs.panelCerrado=false; guardarPrefs(); E.abiertos.add(ir.dataset.irA); pintarPanel(); destacar(ir.dataset.irA); return; }
+    const tg=t.closest("[data-toggle]");
+    if(tg){ const c=tg.dataset.toggle; E.abiertos.has(c)?E.abiertos.delete(c):E.abiertos.add(c); pintarPanel(); return; }
+    const nv=t.closest("[data-n]");
+    if(nv && !E.soloLectura){
+      const c=nv.dataset.c, n=nv.dataset.n;
+      mutar(()=>{ const d=E.ev.decisiones[c]; d.nivel = d.nivel===n ? null : n; if(!d.nivel) d.motivoDesvio=""; });
+      pintarCabecera(); pintarPanel(); return;
+    }
+    const bg=t.closest("[data-borrarg]");
+    if(bg){ mutar(()=>{ E.ev.generales=E.ev.generales.filter(g=>g.id!==bg.dataset.borrarg); }); pintarEval(); return; }
+    const fila=t.closest("[data-evid]");
+    if(fila){
+      const id=fila.dataset.evid;
+      if(fila.dataset.general){
+        // las generales no están en el texto: su comentario se edita aquí
+        E.evAbierta = E.evAbierta===id ? null : id;
+        pintarPanel();
+        const ta=panel.querySelector('[data-coment="'+id+'"]'); if(ta) ta.focus();
+        return;
+      }
+      iluminarMarca(id);
+      const ancla=[...$("lienzo").querySelectorAll("[data-m]")].find(x=>x.dataset.m.split(",").includes(id));
+      if(ancla){ panel.classList.remove("abierto-movil"); abrirPop([id], ancla); }
+      return;
+    }
+    const ai=t.closest("[data-aislar]");
+    if(ai){ E.aislado = E.aislado===ai.dataset.aislar ? null : ai.dataset.aislar; pintarLienzo(); pintarPanel(); return; }
+    const gn=t.closest("button[data-general]");
+    if(gn){ mutar(()=>crearGeneral(E.ev, gn.dataset.general)); pintarEval(); destacar("c1"); return; }
+  });
+  panel.addEventListener("change", e=>{
+    const t=e.target;
+    if(t.dataset.rec!=null){
+      mutar(()=>{ const x=E.ev.recExcluidas; const i=x.indexOf(t.dataset.rec); if(t.checked){ if(i>=0) x.splice(i,1); } else if(i<0) x.push(t.dataset.rec); });
+      pintarPanel(); return;
+    }
+    if(t.hasAttribute("data-general-c2") && t.value){
+      const k=t.value; mutar(()=>crearGeneral(E.ev,"c2.ausente",{caracteristica:k})); pintarEval(); destacar("c2");
+    }
+  });
+  panel.addEventListener("input", e=>{
+    const t=e.target;
+    if(t.id==="obs"){ E.ev.observaciones=t.value; tocar(); return; }
+    if(t.dataset.desvio){ E.ev.decisiones[t.dataset.desvio].motivoDesvio=t.value; tocar(); return; }
+    if(t.dataset.coment){
+      const id=t.dataset.coment;
+      const m=E.ev.marcas.find(x=>x.id===id)||E.ev.generales.find(x=>x.id===id);
+      if(m){ m.comentario=t.value; tocar(); }
+    }
+  });
+
+  // teclado
+  document.addEventListener("keydown", e=>{
+    const campo=e.target.closest && e.target.closest("input,textarea,select");
+    if(e.key==="Escape"){ if(E.popIds) cerrarPop(); else if(E.sel) limpiarSel(); return; }
+    if(campo || E.vista!=="eval" || E.soloLectura) return;
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); deshacer(); return; }
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    if((e.key==="Delete"||e.key==="Backspace") && E.popIds && E.popIds.length===1){ e.preventDefault(); borrarMarca(E.popIds[0]); return; }
+    if(!E.sel) return;
+    if(/^[1-5]$/.test(e.key)){ const id=E.prefs.recientes[+e.key-1]; if(id){ e.preventDefault(); aplicar(id, false); } return; }
+    const id=ATAJOS[e.key.toLowerCase()];
+    if(id){ e.preventDefault(); aplicar(id, e.shiftKey); }
+  });
+  document.addEventListener("click", e=>{
+    // el clic que abrió la ventana (en el texto o en el panel) no la cierra
+    if(E.popIds && !e.target.closest("#pop") && !e.target.closest("[data-m]") && !e.target.closest("[data-evid]")) cerrarPop();
+  });
+  window.addEventListener("beforeunload", guardarTodo);
+  window.addEventListener("resize", ()=>{ if(E.vista==="eval") pintarPanel(); });
+}
+
+/* ---------- arranque ---------- */
+function iniciar(){
+  E.prefs=Object.assign(E.prefs, ALM.leer("preferencias", {}));
+  if(E.prefs.reglas){
+    // se aceptan solo claves que existen, por si cambian los umbrales entre versiones
+    Object.keys(REGLAS_BASE).forEach(g=>{ if(typeof REGLAS_BASE[g]==="object" && E.prefs.reglas[g]) Object.keys(REGLAS_BASE[g]).forEach(k=>{ const v=E.prefs.reglas[g][k]; if(typeof v==="number") REGLAS[g][k]=v; }); });
+  }
+  E.historial=ALM.leer("historial", []);
+  E.borradas=ALM.leer("borradas", []);
+  E.materiales=ALM.leer("materiales", []);
+  E.publicos=leerBloque("datos-publicos")||[];
+  E.cifrado=leerBloque("datos-cifrados");
+  enlazar();
+  mostrar("entrada");
+  if(!ALM.persistente) aviso("Este navegador no deja guardar datos: descarga el historial antes de cerrar.");
+}
+if(typeof document!=="undefined" && document.getElementById("vEntrada")) iniciar();
+
+</script>
+</body>
+</html>
