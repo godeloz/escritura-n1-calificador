@@ -69,15 +69,6 @@ header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(i
 .ayuda-mat{font-size:12.5px;color:var(--tinta-2);margin:0 0 12px;max-width:70ch}
 .campo textarea.corto{min-height:150px;font-family:Inter,sans-serif;font-size:13px}
 .campo select{border:1px solid var(--linea);border-radius:var(--r);background:var(--hoja);padding:9px 10px}
-.referencia{border-top:1px solid var(--linea);display:grid;grid-template-columns:1fr 1fr;gap:0}
-.ref-col{min-width:0;display:flex;flex-direction:column;max-height:38vh}
-.ref-col+.ref-col{border-left:1px solid var(--linea)}
-.ref-col h4{font-size:12px;color:var(--tinta-3);font-weight:500;padding:8px 18px 4px;display:flex;justify-content:space-between}
-.ref-txt{overflow:auto;padding:0 18px 12px;font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.6}
-.ref-txt p{margin:0 0 .7em}
-.ref-vacio{color:var(--tinta-3);font-family:Inter,sans-serif;font-size:12.5px}
-.ver-mat{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.ver-mat .ref-txt{max-height:60vh;padding:0;border-top:1px solid var(--linea-2);padding-top:8px}
 .pie-entrada{display:flex;align-items:center;gap:14px;margin-top:4px}
 .contador{font-size:12.5px;color:var(--tinta-2)}
 .lateral h2{font-size:14px;margin-bottom:10px}
@@ -88,42 +79,72 @@ header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(i
 .item-ej small{color:var(--tinta-3);font-variant-numeric:tabular-nums}
 
 /* ---------- evaluación ---------- */
-#vEval{display:grid;grid-template-columns:minmax(0,1fr) var(--panel);align-items:start}
-#vEval.panel-cerrado{grid-template-columns:minmax(0,1fr) 56px}
-.zona-texto{min-width:0;border-right:1px solid var(--linea)}
+:root{--pal:304px}
+#vEval{display:grid;grid-template-columns:var(--pal) minmax(0,1fr) var(--panel);align-items:start}
+.zona-texto{min-width:0;border-right:1px solid var(--linea);border-left:1px solid var(--linea)}
 
-/* paleta */
-.paleta{position:sticky;top:var(--cab);z-index:30;background:var(--papel);border-bottom:1px solid var(--linea)}
-.pal-barra{display:flex;align-items:center;gap:6px;padding:8px 18px;flex-wrap:wrap}
-.filtros{display:flex;gap:2px;background:var(--linea-2);border-radius:999px;padding:2px}
-.filtros button{border:none;background:transparent;padding:4px 11px;border-radius:999px;font-size:12.5px;color:var(--tinta-2)}
+/* paleta, columna izquierda */
+.paleta{position:sticky;top:var(--cab);height:calc(100vh - var(--cab));display:flex;flex-direction:column;background:var(--papel);min-width:0}
+.pal-cab{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--linea)}
+.filtros{display:flex;gap:1px;background:var(--linea-2);border-radius:999px;padding:2px;min-width:0;flex:1}
+.filtros button{border:none;background:transparent;padding:4px 6px;border-radius:999px;font-size:11.5px;color:var(--tinta-2);white-space:nowrap;flex:1}
 .filtros button.on{background:var(--hoja);color:var(--tinta);box-shadow:0 0 0 1px var(--linea)}
-.conteos{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--tinta-2);margin-left:6px;font-variant-numeric:tabular-nums}
-.conteos span{display:inline-flex;gap:4px;align-items:center}
-.pal-barra .der{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-.chk{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tinta-2);padding:0 6px}
-.pal-cuerpo{border-top:1px solid var(--linea);max-height:46vh;overflow:auto;padding:10px 18px 14px}
-.pal-sel{font-size:12.5px;color:var(--tinta-2);margin-bottom:8px;display:flex;gap:8px;align-items:baseline}
+.pal-cab .btn{margin-left:auto}
+.pal-cuerpo{flex:1;overflow:auto;padding:10px 12px 40px}
+.pal-sel{font-size:12.5px;color:var(--tinta-2);margin-bottom:9px;border-left:3px solid var(--tinta-3);padding-left:8px}
 .pal-sel q{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--tinta);font-size:13.5px}
-.franja{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-.franja .lab{font-size:11.5px;color:var(--tinta-3);width:74px;flex:none}
-.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.cols[data-n="1"]{grid-template-columns:minmax(0,1fr)}
-.cols[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
-.col h4{font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px}
-.grupo{border-left:3px solid;padding-left:8px;margin-bottom:10px}
+.pal-sel .esc{display:block;font-size:11px;color:var(--tinta-3)}
+.franja{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.franja .lab{font-size:11px;color:var(--tinta-3);width:100%;margin-bottom:1px}
+.grupo{border-left:3px solid;padding-left:8px;margin-bottom:11px}
 .grupo .gt{font-size:11.5px;font-weight:600;margin-bottom:4px}
 .ev{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 5px;font-size:12.5px;line-height:1.3}
 .ev:hover{background:var(--hoja);border-color:var(--linea)}
 .ev .k{margin-left:auto;font-size:10.5px;color:var(--tinta-3);border:1px solid var(--linea);border-radius:3px;padding:0 4px}
-.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--linea);background:var(--hoja);border-radius:999px;padding:3px 10px 3px 5px;font-size:12.5px}
+.chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--linea);background:var(--hoja);border-radius:999px;padding:3px 9px 3px 5px;font-size:12px}
 .chip:hover{border-color:var(--tinta-3)}
 .chip .k{font-size:10.5px;color:var(--tinta-3)}
 .caracs{display:flex;gap:3px;flex-wrap:wrap;margin:2px 0 5px}
 .caracs button{border:1px solid var(--linea);background:transparent;border-radius:4px;padding:1px 6px;font-size:11px;color:var(--tinta-2)}
 .caracs button.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
-.pal-vacia{font-size:12.5px;color:var(--tinta-3)}
+.pal-vacia{font-size:12.5px;color:var(--tinta-3);margin:0 0 10px}
 .pal-vacia kbd{border:1px solid var(--linea);border-radius:3px;padding:0 4px;font-size:11px}
+.paleta.cerrada .pal-cab,.paleta.cerrada .pal-cuerpo{display:none}
+.pal-rail{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0}
+.pal-rail .vert{writing-mode:vertical-rl;font-size:11.5px;color:var(--tinta-3);letter-spacing:.04em}
+
+/* barra sobre el texto */
+.barra-texto{position:sticky;top:var(--cab);z-index:30;display:flex;align-items:center;gap:8px;padding:8px 18px;background:color-mix(in srgb,var(--papel) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--linea);flex-wrap:wrap}
+.barra-texto .der{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.conteos{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--tinta-2);font-variant-numeric:tabular-nums}
+.conteos span{display:inline-flex;gap:4px;align-items:center}
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--tinta-2);padding:0 6px}
+
+/* texto base y resumen */
+.referencia{border-bottom:1px solid var(--linea);background:var(--papel)}
+.ref-barra{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 18px;border-bottom:1px solid var(--linea-2);font-size:12px}
+.ref-barra .tit{color:var(--tinta-3)}
+.ref-barra .est{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--linea);background:var(--hoja);border-radius:999px;padding:2px 9px;font-size:12px}
+.ref-barra .est i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ref-barra .est:hover{border-color:var(--tinta-3)}
+.ref-barra .ctx{color:var(--tinta-2)}
+.ref-barra .ctx q{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--tinta)}
+.ref-cols{display:grid;grid-template-columns:1fr 1fr}
+.ref-col{min-width:0;display:flex;flex-direction:column;max-height:34vh}
+.ref-col+.ref-col{border-left:1px solid var(--linea)}
+.ref-col h4{font-size:12px;color:var(--tinta-3);font-weight:500;padding:8px 18px 4px;display:flex;justify-content:space-between;gap:8px}
+.ref-txt{overflow:auto;padding:0 18px 12px;font-family:"Source Serif 4",Georgia,serif;font-size:14.5px;line-height:1.65}
+.ref-txt p{margin:0 0 .7em}
+.ref-vacio{color:var(--tinta-3);font-family:Inter,sans-serif;font-size:12.5px}
+.rt.sub{border-radius:2px;cursor:pointer}
+.rt.s{outline:2px solid var(--tinta-3);outline-offset:1px;border-radius:2px}
+.ver-mat{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ver-mat .ref-txt{max-height:60vh;padding:0;border-top:1px solid var(--linea-2);padding-top:8px}
+.et-fila{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--linea-2)}
+.et-fila input[type=text]{width:100%;border:1px solid var(--linea);border-radius:5px;padding:5px 8px;background:var(--hoja)}
+.et-colores{display:flex;gap:4px}
+.et-colores button{width:20px;height:20px;border-radius:50%;border:2px solid transparent}
+.et-colores button.on{border-color:var(--tinta)}
 
 /* lienzo */
 .lienzo{max-width:72ch;margin:0 auto;padding:30px 30px 120px 56px;font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.8}
@@ -237,7 +258,7 @@ header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(i
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--tinta);color:var(--papel);padding:9px 16px;border-radius:8px;font-size:13px;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 
 /* ---------- móvil ---------- */
-#btnPanelMovil{display:none}
+#btnPanelMovil,#btnPaletaMovil{display:none}
 @media (max-width:900px){
   #vEntrada{grid-template-columns:1fr}
   .fila2{grid-template-columns:1fr}
@@ -250,25 +271,24 @@ header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(i
   .acciones .btn{padding:6px 9px}
   .total .cifra{font-size:22px}
   .total .sobre{font-size:11px}
-  .pal-barra{padding:6px 10px}
-  .pal-barra .der{margin-left:0}
-  .chk{padding:0 3px}
-  #vEval,#vEval.panel-cerrado{grid-template-columns:1fr}
-  .zona-texto{border-right:none}
+  #vEval{grid-template-columns:1fr!important}
+  .zona-texto{border:none}
   .lienzo{padding:22px 18px 140px 44px;font-size:16.5px}
   .pil{left:-42px}
-  .chk,#bFijar{display:none}
-  .toast{bottom:76px}
-  .panel{position:fixed;left:0;right:0;bottom:0;top:auto;height:78vh;z-index:60;border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);transform:translateY(105%);transition:transform .2s}
+  .chk{display:none}
+  .barra-texto{padding:6px 10px}
+  .paleta{position:fixed;left:0;right:0;bottom:0;top:auto;height:74vh;z-index:60;border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);transform:translateY(105%);transition:transform .2s}
+  .paleta.abierta-movil{transform:none}
+  .panel{position:fixed;left:0;right:0;bottom:0;top:auto;height:78vh;z-index:61;border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);transform:translateY(105%);transition:transform .2s}
   .panel.abierto-movil{transform:none}
   #btnPanelMovil{display:block;position:fixed;right:14px;bottom:14px;z-index:55;border-radius:999px;padding:10px 16px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
-  .pal-cuerpo{position:fixed;left:0;right:0;bottom:0;max-height:62vh;background:var(--papel);border-top:1px solid var(--linea);border-radius:14px 14px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.18);z-index:58}
-  .cols,.cols[data-n]{grid-template-columns:minmax(0,1fr)}
-  .referencia,.ver-mat{grid-template-columns:1fr}
-  .ref-col{max-height:26vh}
-  .ref-col+.ref-col{border-left:none;border-top:1px solid var(--linea)}
+  #btnPaletaMovil{display:block;position:fixed;left:14px;bottom:14px;z-index:55;border-radius:999px;padding:10px 16px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+  .toast{bottom:76px}
   .pop{width:auto;left:10px!important;right:10px}
   .franja-panel{display:none}
+  .ref-cols,.ver-mat{grid-template-columns:1fr}
+  .ref-col{max-height:26vh}
+  .ref-col+.ref-col{border-left:none;border-top:1px solid var(--linea)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -384,34 +404,40 @@ header{position:sticky;top:0;z-index:50;height:var(--cab);background:color-mix(i
   </section>
 
   <section id="vEval" hidden>
-    <div class="zona-texto">
-      <div class="paleta" id="paleta">
-        <div class="pal-barra">
-          <div class="filtros" id="filtros" role="group" aria-label="Filtrar paleta">
-            <button data-f="todo" class="on">Todo</button>
-            <button data-f="correccion">Corrección</button>
-            <button data-f="cohesion">Cohesión</button>
-            <button data-f="contenido">Contenido</button>
-          </div>
-          <div class="conteos"><span><i class="ico-ok">✓</i><b id="cOk">0</b></span><span><i class="ico-mal">✕</i><b id="cMal">0</b></span></div>
-          <div class="der">
-            <button class="btn mini fantasma" id="bDeshacer" title="Deshacer (Ctrl+Z)">Deshacer</button>
-            <button class="btn mini" id="bReferencia" hidden>Texto base</button>
-            <button class="btn mini" id="bSugerir">Sugerir marcadores</button>
-            <label class="chk"><input type="checkbox" id="chkNum" checked> Números</label>
-            <label class="chk"><input type="checkbox" id="chkMarcas" checked> Marcas</label>
-            <button class="btn mini fantasma" id="bFijar" title="Mantener la paleta abierta">Abrir paleta</button>
-          </div>
+    <aside class="paleta" id="paleta" aria-label="Paleta de evidencias">
+      <div class="pal-cab">
+        <div class="filtros" id="filtros" role="tablist" aria-label="Secciones de la paleta">
+          <button data-f="todo" class="on" role="tab">Todo</button>
+          <button data-f="correccion" role="tab">Corrección</button>
+          <button data-f="cohesion" role="tab">Cohesión</button>
+          <button data-f="contenido" role="tab">Contenido</button>
         </div>
-        <div class="referencia" id="referencia" hidden></div>
-        <div class="pal-cuerpo" id="palCuerpo" hidden></div>
+        <button class="btn mini fantasma" data-pal="cerrar" title="Ocultar la paleta" aria-label="Ocultar la paleta">◂</button>
       </div>
+      <div class="pal-cuerpo" id="palCuerpo"></div>
+      <div class="pal-rail" id="palRail" hidden><button class="btn mini" data-pal="abrir" title="Mostrar la paleta" aria-label="Mostrar la paleta">▸</button><span class="vert">Marcas</span></div>
+    </aside>
+
+    <div class="zona-texto">
+      <div class="barra-texto">
+        <div class="conteos"><span><i class="ico-ok">✓</i><b id="cOk">0</b></span><span><i class="ico-mal">✕</i><b id="cMal">0</b></span></div>
+        <div class="der">
+          <button class="btn mini fantasma" id="bDeshacer" title="Deshacer (Ctrl+Z)">Deshacer</button>
+          <button class="btn mini" id="bReferencia" hidden>Texto base</button>
+          <button class="btn mini" id="bSugerir">Sugerir marcadores</button>
+          <label class="chk"><input type="checkbox" id="chkNum" checked> Números</label>
+          <label class="chk"><input type="checkbox" id="chkMarcas" checked> Marcas</label>
+        </div>
+      </div>
+      <div class="referencia" id="referencia" hidden></div>
       <div style="position:relative">
         <article class="lienzo" id="lienzo" aria-label="Texto del estudiante"></article>
         <div class="pop" id="pop" hidden></div>
       </div>
     </div>
+
     <aside class="panel" id="panel" aria-label="Rúbrica"></aside>
+    <button class="btn pri" id="btnPaletaMovil">Marcas</button>
     <button class="btn pri" id="btnPanelMovil">Rúbrica</button>
   </section>
 </main>
@@ -675,6 +701,15 @@ const ETIQ_REGLA = {
   "c12.totalInicial":"Fallas gramaticales que llevan a Inicial",
   "c12.comprometeInicial":"Fallas que comprometen la comprensión y llevan a Inicial"
 };
+
+/* Subrayado del texto base y del resumen: etiquetas de color editables */
+const COLORES_ETIQUETA = ["#1D4ED8","#B45309","#15803D","#6D28D9","#BE185D","#0F766E","#B91C1C","#4D7C0F"];
+const ETIQUETAS_BASE = [
+  {id:"et1", nom:"Idea principal", color:"#1D4ED8"},
+  {id:"et2", nom:"Estructura", color:"#B45309"},
+  {id:"et3", nom:"Fidelidad", color:"#15803D"},
+  {id:"et4", nom:"Estrategias discursivas", color:"#6D28D9"}
+];
 
 const MARCADORES = ["en primer lugar","en segundo lugar","en tercer lugar","por un lado","por otro lado","por otra parte","en cambio","sin embargo","no obstante","aunque","a pesar de","pese a","además","asimismo","también","igualmente","de igual modo","del mismo modo","por lo tanto","por tanto","por consiguiente","en consecuencia","así pues","de ahí que","por ello","porque","ya que","puesto que","dado que","debido a","es decir","o sea","en otras palabras","dicho de otro modo","por ejemplo","tal como","así como","en efecto","de hecho","ahora bien","con todo","en definitiva","en conclusión","para concluir","en síntesis","en suma","finalmente","por último","en resumen","a modo de cierre","primero","luego","después","entonces","mientras que","al mismo tiempo","frente a","respecto a","en cuanto a","en relación con","cabe señalar","cabe destacar","conviene precisar","inicialmente"];
 
@@ -1388,9 +1423,10 @@ function nombreArchivo(){ return "asistente-lectura-"+new Date().toISOString().s
 const $ = id => document.getElementById(id);
 const E = {
   vista:"entrada", ev:null, soloLectura:false,
-  historial:[], borradas:[], materiales:[], publicos:[], cifrado:null, sesion:null, desbloqueado:false, verReferencia:false,
-  prefs:{filtro:"todo", panelCerrado:false, numeros:true, marcas:true, recientes:[], caracteristica:"ideaPrincipal", reglas:null, avisoPublico:false, ultimoMaterial:null},
-  sel:null, tipoSel:null, palFijada:false,
+  historial:[], borradas:[], materiales:[], etiquetas:[], publicos:[],
+  selRef:null, selSub:null, cifrado:null, sesion:null, desbloqueado:false, verReferencia:false,
+  prefs:{filtro:"todo", panelCerrado:false, numeros:true, marcas:true, recientes:[], caracteristica:"ideaPrincipal", palCerrada:false, reglas:null, avisoPublico:false, ultimoMaterial:null},
+  sel:null, tipoSel:null,
   deshacer:[], abiertos:new Set(), aislado:null,
   detector:false, sugerencias:[], descartadas:new Set(),
   popIds:null, evAbierta:null, tocando:false
@@ -1403,6 +1439,7 @@ function guardarTodo(){
   ALM.escribir("historial", E.historial);
   ALM.escribir("borradas", E.borradas);
   ALM.escribir("materiales", E.materiales);
+  ALM.escribir("etiquetas", E.etiquetas);
 }
 function materialDe(ev){ return ev && ev.materialId ? E.materiales.find(m=>m.id===ev.materialId)||null : null; }
 function programarGuardado(){
@@ -1450,16 +1487,23 @@ function establecerSel(sel){
   E.tipoSel = sel ? clasificarSeleccion(E.ev.texto, E.ev.parrafos, sel) : null;
   cerrarPop();
   pintarLienzo(); pintarPaleta();
+  if(sel && window.innerWidth<=900) $("paleta").classList.add("abierta-movil");
   if(sel) asegurarVisible();
 }
 function asegurarVisible(){
   try{
     const n=document.querySelector("#lienzo .t.s, #lienzo .sel-punto"); if(!n) return;
     const r=n.getBoundingClientRect(); if(!r.height) return;
-    const barra=$("paleta").getBoundingClientRect().bottom;
-    const cuerpo=$("palCuerpo"), fijo=getComputedStyle(cuerpo).position==="fixed";
-    if(fijo){ const tope=cuerpo.getBoundingClientRect().top; if(r.bottom>tope-8) window.scrollBy(0, r.bottom-tope+60); }
-    else if(r.top<barra+8) window.scrollBy(0, r.top-barra-60);
+    // en escritorio la paleta está al lado y no tapa nada; en móvil es una
+    // hoja inferior que sí puede cubrir la selección
+    const pal=$("paleta");
+    if(getComputedStyle(pal).position==="fixed"){
+      const tope=pal.getBoundingClientRect().top;
+      if(r.bottom>tope-8) window.scrollBy(0, r.bottom-tope+60);
+    } else {
+      const barra=document.querySelector(".barra-texto").getBoundingClientRect().bottom;
+      if(r.top<barra+8) window.scrollBy(0, r.top-barra-40);
+    }
   }catch(e){}
 }
 function limpiarSel(){ if(E.sel){ E.sel=null; E.tipoSel=null; pintarLienzo(); pintarPaleta(); } }
@@ -1559,6 +1603,7 @@ function aplicar(id, shift){
   if(!m){ E.deshacer.pop(); aviso("Esa evidencia no se puede anclar a lo que seleccionaste."); return; }
   recordar(id);
   E.sel=null; E.tipoSel=null;
+  if(window.innerWidth<=900) $("paleta").classList.remove("abierta-movil");
   recalcularSugerencias();
   pintarEval();
   destacar(EVI[id].crit);
@@ -1741,6 +1786,63 @@ function borrarMarca(id){
 }
 
 /* =========================================================================
+   SUBRAYADO DEL TEXTO BASE Y DEL RESUMEN
+   Mismo modelo que las marcas: posiciones de carácter sobre el texto
+   normalizado del material, nunca copias del texto.
+   ========================================================================= */
+function textoDoc(mat, doc){ return String((doc==="fuente"?mat.fuente:mat.resumen)||"").trim(); }
+function posRef(nodo, off, caja){
+  if(nodo.nodeType===3){
+    const t=nodo.parentElement && nodo.parentElement.closest(".rt");
+    if(t && caja.contains(t)) return (+t.dataset.o)+off;
+  }
+  const r=document.createRange(); r.setStart(nodo, off); r.collapse(true);
+  const ts=caja.querySelectorAll(".rt");
+  for(const t of ts){ if(r.comparePoint(t,0)>=0) return +t.dataset.o; }
+  const u=ts[ts.length-1];
+  return u ? (+u.dataset.o)+u.textContent.length : 0;
+}
+function alSoltarRef(evt){
+  const mat=materialDe(E.ev); if(!mat || E.soloLectura) return;
+  const caja=evt.target.closest(".ref-txt");
+  const s=window.getSelection();
+  if(caja && s && s.rangeCount && !s.isCollapsed && caja.contains(s.anchorNode) && caja.contains(s.focusNode)){
+    const doc=caja.dataset.doc, t=textoDoc(mat,doc);
+    const sel=ajustarSeleccion(t, posRef(s.anchorNode,s.anchorOffset,caja), posRef(s.focusNode,s.focusOffset,caja));
+    s.removeAllRanges();
+    if(sel){ E.selRef={doc, inicio:sel.inicio, fin:sel.fin}; E.selSub=null; pintarReferencia(); }
+    return;
+  }
+  const sub=evt.target.closest("[data-s]");
+  if(sub){ E.selSub=sub.dataset.s; E.selRef=null; pintarReferencia(); return; }
+  if(caja && (E.selRef||E.selSub)){ E.selRef=null; E.selSub=null; pintarReferencia(); }
+}
+function subrayar(etiqueta){
+  const mat=materialDe(E.ev); if(!mat || E.soloLectura) return;
+  mat.subrayados=mat.subrayados||[];
+  // una selección nueva manda sobre un subrayado que siguiera seleccionado
+  if(E.selRef){
+    // un subrayado nuevo reemplaza a los que cubra por completo
+    mat.subrayados=mat.subrayados.filter(y=>!(y.doc===E.selRef.doc && y.inicio>=E.selRef.inicio && y.fin<=E.selRef.fin));
+    const nuevo={id:nuevoId("sub"), doc:E.selRef.doc, inicio:E.selRef.inicio, fin:E.selRef.fin, etiqueta};
+    mat.subrayados.push(nuevo);
+    mat.modificada=ahora();
+    E.selSub=nuevo.id; E.selRef=null;
+  } else if(E.selSub){
+    const x=mat.subrayados.find(y=>y.id===E.selSub);
+    if(x){ x.etiqueta=etiqueta; mat.modificada=ahora(); }
+  } else { aviso("Selecciona primero un fragmento del texto base o del resumen."); return; }
+  programarGuardado();
+  pintarReferencia();
+}
+function quitarSubrayado(){
+  const mat=materialDe(E.ev); if(!mat || !E.selSub) return;
+  mat.subrayados=(mat.subrayados||[]).filter(x=>x.id!==E.selSub);
+  mat.modificada=ahora(); E.selSub=null;
+  programarGuardado(); pintarReferencia();
+}
+
+/* =========================================================================
    7. INTERFAZ · paleta, panel de rúbrica y cabecera
    ========================================================================= */
 function icono(pol){ return pol==="+" ? '<i class="ico-ok" aria-label="acierto">✓</i>' : '<i class="ico-mal" aria-label="error">✕</i>'; }
@@ -1760,24 +1862,36 @@ function descripcionSel(){
   return (E.tipoSel==="signo"?"Signo ":"")+'<q>'+esc(f.length>90?f.slice(0,89)+"…":f)+'</q>';
 }
 
+function ajustarColumnas(){
+  const v=$("vEval"), ancho=window.innerWidth>900;
+  if(!ancho){ v.style.gridTemplateColumns=""; return; }
+  const izq = E.soloLectura ? "0px" : (E.prefs.palCerrada ? "46px" : "var(--pal)");
+  v.style.gridTemplateColumns = izq+" minmax(0,1fr) "+(E.prefs.panelCerrado ? "56px" : "var(--panel)");
+}
 function pintarPaleta(){
   if(!E.ev) return;
-  const cuerpo=$("palCuerpo");
-  $("filtros").querySelectorAll("button").forEach(b=>b.classList.toggle("on", b.dataset.f===E.prefs.filtro));
+  const paleta=$("paleta"), cuerpo=$("palCuerpo");
   const todas=[...E.ev.marcas, ...E.ev.generales];
   $("cOk").textContent=todas.filter(m=>EVI[m.evidencia].pol==="+").length;
   $("cMal").textContent=todas.filter(m=>EVI[m.evidencia].pol==="-").length;
   $("bSugerir").textContent=E.detector?"Ocultar sugerencias":"Sugerir marcadores";
-  pintarReferencia();
-  $("bFijar").textContent=E.palFijada?"Cerrar paleta":"Abrir paleta";
   $("chkNum").checked=E.prefs.numeros; $("chkMarcas").checked=E.prefs.marcas;
-  const abierta = !E.soloLectura && (E.sel || E.palFijada);
-  cuerpo.hidden=!abierta;
-  if(!abierta){ cuerpo.innerHTML=""; return; }
+  pintarReferencia();
+  ajustarColumnas();
+  paleta.hidden=E.soloLectura;
+  if(E.soloLectura) return;
+  const cerrada=!!E.prefs.palCerrada && window.innerWidth>900;
+  paleta.classList.toggle("cerrada", cerrada);
+  $("palRail").hidden=!cerrada;
+  if(cerrada){ cuerpo.innerHTML=""; return; }
+  $("filtros").querySelectorAll("button").forEach(b=>{
+    const on=b.dataset.f===E.prefs.filtro;
+    b.classList.toggle("on", on); b.setAttribute("aria-selected", on);
+  });
 
   let h="";
-  if(E.sel) h+='<div class="pal-sel"><span>'+descripcionSel()+'</span><span style="margin-left:auto;font-size:11.5px">Esc para cancelar</span></div>';
-  else h+='<p class="pal-vacia">Selecciona una palabra, una frase o un signo; haz clic en un espacio para marcar un hueco, o en <kbd>¶</kbd> para tomar el párrafo entero.</p>';
+  if(E.sel) h+='<div class="pal-sel">'+descripcionSel()+'<span class="esc">Esc para cancelar</span></div>';
+  else h+='<p class="pal-vacia">Selecciona una palabra, una frase o un signo en el texto; haz clic en un espacio para marcar un hueco, o en <kbd>¶</kbd> para tomar el párrafo entero.</p>';
 
   const seccionesVisibles=SECCIONES.filter(s=>E.prefs.filtro==="todo"||s.id===E.prefs.filtro);
   const critVisibles=new Set(seccionesVisibles.flatMap(s=>s.crits));
@@ -1789,32 +1903,61 @@ function pintarPaleta(){
 
   if(E.sel && E.tipoSel){
     const sug=(SUGERIDAS[E.tipoSel]||[]).map(id=>EVI[id]).filter(e=>critVisibles.has(e.crit) && !rec.includes(e.id));
-    if(sug.length) h+='<div class="franja"><span class="lab">Sugeridas</span>'+sug.map(e=>botonEvidencia(e,"chip")).join("")+'</div>';
+    if(sug.length) h+='<div class="franja"><span class="lab">Sugeridas para lo que seleccionaste</span>'+sug.map(e=>botonEvidencia(e,"chip")).join("")+'</div>';
   }
 
-  h+='<div class="cols" data-n="'+seccionesVisibles.length+'">';
-  seccionesVisibles.forEach(s=>{
-    h+='<div class="col"><h4>'+s.nom+'</h4>';
-    s.crits.forEach(cid=>{
+  seccionesVisibles.forEach(sec=>{
+    sec.crits.forEach(cid=>{
       const c=CRIT[cid], f=FAMILIAS[c.fam];
-      const evs=CATALOGO.filter(e=>e.crit===cid && !e.general);
       h+='<div class="grupo" style="border-color:'+f.color+'"><div class="gt" style="color:'+f.color+'">'+esc(c.corto)+'</div>';
       if(cid==="c2") h+='<div class="caracs" role="group" aria-label="Característica">'+CARACTERISTICAS.map(k=>'<button data-carac="'+k.id+'" class="'+(E.prefs.caracteristica===k.id?"on":"")+'">'+k.nom+'</button>').join("")+'</div>';
-      h+=evs.map(e=>botonEvidencia(e)).join("");
-      h+='</div>';
+      h+=CATALOGO.filter(e=>e.crit===cid && !e.general).map(e=>botonEvidencia(e)).join("")+'</div>';
     });
-    h+='</div>';
   });
-  h+='</div>';
-  if(E.sel) h+='<p class="pal-vacia" style="margin-top:6px">Mayúscula + clic, o Mayúscula + tecla, crea la marca con la gravedad aumentada.</p>';
+  if(E.sel) h+='<p class="pal-vacia">Mayúscula + clic, o Mayúscula + tecla, crea la marca con la gravedad aumentada.</p>';
   cuerpo.innerHTML=h;
 }
 
-/* ---------- texto base y resumen, para consultar mientras se marca ---------- */
+/* ---------- texto base y resumen, con subrayado por etiquetas ---------- */
 function htmlParrafos(t){
   const x=String(t||"").trim();
   return x ? x.split(/\n\s*\n/).map(p=>'<p>'+esc(p)+'</p>').join("") : '<p class="ref-vacio">No se pegó este texto.</p>';
 }
+function etiquetaDe(id){ return E.etiquetas.find(x=>x.id===id) || {id, nom:"Etiqueta", color:"#8A877E"}; }
+/* Pinta un documento de referencia cortándolo en los límites de sus
+   subrayados. Misma técnica que el lienzo: capas sobre posiciones. */
+function htmlRef(texto, subs, doc, interactivo){
+  const t=String(texto||"").trim();
+  if(!t) return '<p class="ref-vacio">No se pegó este texto.</p>';
+  const parr=separarParrafos(t);
+  const sel=(interactivo && E.selRef && E.selRef.doc===doc) ? E.selRef : null;
+  let html="";
+  parr.forEach(p=>{
+    const cortes=new Set([p.inicio,p.fin]);
+    const dentro=(a,b)=>a<p.fin && b>p.inicio;
+    subs.forEach(x=>{ if(dentro(x.inicio,x.fin)){ cortes.add(Math.max(p.inicio,x.inicio)); cortes.add(Math.min(p.fin,x.fin)); } });
+    if(sel && dentro(sel.inicio,sel.fin)){ cortes.add(Math.max(p.inicio,sel.inicio)); cortes.add(Math.min(p.fin,sel.fin)); }
+    const cs=[...cortes].sort((a,b)=>a-b);
+    let cuerpo="";
+    for(let i=0;i<cs.length-1;i++){
+      const a=cs[i], b=cs[i+1];
+      const cubren=subs.filter(x=>x.inicio<=a && x.fin>=b);
+      const enSel=sel && sel.inicio<=a && sel.fin>=b;
+      let est="", cls="rt";
+      if(cubren.length){
+        const et=etiquetaDe(cubren[cubren.length-1].etiqueta);
+        cls+=" sub"+(E.selSub===cubren[cubren.length-1].id?" s":"");
+        est='background:'+et.color+'2e;box-shadow:inset 0 -2px 0 '+et.color+';';
+      }
+      if(enSel) cls+=" s";
+      cuerpo+='<span class="'+cls+'" data-o="'+a+'"'+(cubren.length?' data-s="'+cubren[cubren.length-1].id+'" title="'+esc(etiquetaDe(cubren[cubren.length-1].etiqueta).nom)+'"':'')+
+        (est?' style="'+est+'"':'')+'>'+esc(t.slice(a,b))+'</span>';
+    }
+    html+='<p>'+cuerpo+'</p>';
+  });
+  return html;
+}
+function subsDe(mat, doc){ return (mat.subrayados||[]).filter(x=>x.doc===doc).sort((a,b)=>a.inicio-b.inicio); }
 function pintarReferencia(){
   const mat=materialDe(E.ev), b=$("bReferencia"), r=$("referencia");
   b.hidden=!mat;
@@ -1823,10 +1966,25 @@ function pintarReferencia(){
   b.classList.toggle("pri", E.verReferencia);
   r.hidden=!E.verReferencia;
   if(!E.verReferencia){ r.innerHTML=""; return; }
-  if(r.dataset.mat===mat.id && r.innerHTML) return;   // no reinicia el desplazamiento
-  r.dataset.mat=mat.id;
-  r.innerHTML='<div class="ref-col"><h4><span>Texto base</span><span>'+esc(mat.titulo)+'</span></h4><div class="ref-txt">'+htmlParrafos(mat.fuente)+'</div></div>'+
-    '<div class="ref-col"><h4><span>Resumen de la IA</span><span>'+contarPalabras(mat.resumen||"")+' palabras</span></h4><div class="ref-txt">'+htmlParrafos(mat.resumen)+'</div></div>';
+  const ro=E.soloLectura;
+  const sub=E.selSub ? (mat.subrayados||[]).find(x=>x.id===E.selSub) : null;
+  let ctx="";
+  if(sub) ctx='<span class="ctx">Subrayado: <q>'+esc(recorte(sub.doc==="fuente"?mat.fuente:mat.resumen, sub))+'</q></span>';
+  else if(E.selRef) ctx='<span class="ctx">Selección: <q>'+esc(recorte(E.selRef.doc==="fuente"?mat.fuente:mat.resumen, E.selRef))+'</q></span>';
+  else ctx='<span class="ctx">Selecciona un fragmento y elige una etiqueta.</span>';
+  const activo=sub||E.selRef;
+  let barra='<div class="ref-barra"><span class="tit">Subrayar</span>'+
+    E.etiquetas.map(et=>'<button class="est" data-et="'+et.id+'"'+(ro?" disabled":"")+(activo?'':' style="opacity:.55"')+'><i style="background:'+et.color+'"></i>'+esc(et.nom)+'</button>').join("")+
+    (sub&&!ro?'<button class="btn mini" data-et-quitar="1">Quitar</button>':'')+
+    (ro?'':'<button class="btn mini fantasma" data-et-editar="1">Etiquetas…</button>')+ctx+'</div>';
+  r.innerHTML=barra+'<div class="ref-cols">'+
+    '<div class="ref-col"><h4><span>Texto base</span><span>'+esc(mat.titulo)+'</span></h4><div class="ref-txt" data-doc="fuente">'+htmlRef(mat.fuente, subsDe(mat,"fuente"), "fuente", !ro)+'</div></div>'+
+    '<div class="ref-col"><h4><span>Resumen de la IA</span><span>'+contarPalabras(mat.resumen||"")+' palabras</span></h4><div class="ref-txt" data-doc="resumen">'+htmlRef(mat.resumen, subsDe(mat,"resumen"), "resumen", !ro)+'</div></div>'+
+    '</div>';
+}
+function recorte(texto, x){
+  const f=String(texto||"").trim().slice(x.inicio,x.fin).replace(/\s+/g," ");
+  return f.length>46 ? f.slice(0,45)+"…" : f;
 }
 
 /* ---------- panel de rúbrica ---------- */
@@ -1841,7 +1999,7 @@ function conteoCrit(ev, cid){
 }
 function pintarPanel(){
   const p=$("panel"), ev=E.ev; if(!ev) return;
-  const cerrado=E.prefs.panelCerrado && window.innerWidth>900;
+  const cerrado=!!E.prefs.panelCerrado && window.innerWidth>900;
   $("vEval").classList.toggle("panel-cerrado", cerrado);
   if(cerrado){
     p.innerHTML='<div class="franja-panel"><button class="btn mini" data-panel="abrir" title="Abrir la rúbrica">◂</button>'+
@@ -2037,7 +2195,7 @@ function evaluarTexto(){
 function abrirEv(ev, soloLectura){
   E.ev=ev; E.soloLectura=!!soloLectura; E.sel=null; E.tipoSel=null; E.deshacer=[];
   E.aislado=null; E.detector=false; E.sugerencias=[]; E.descartadas=new Set(); E.evAbierta=null;
-  E.abiertos=new Set(); E.verReferencia=false;
+  E.abiertos=new Set(); E.verReferencia=false; E.selRef=null; E.selSub=null;
   mostrar("eval");
   pintarEval();
 }
@@ -2100,8 +2258,8 @@ function verMaterial(id){
   const m=E.materiales.find(x=>x.id===id); if(!m) return;
   const usos=E.historial.filter(ev=>ev.materialId===id).length;
   const v=ventana('<h2>'+esc(m.titulo)+'</h2><p>Guardada el '+fechaCorta(m.creada)+' · '+usos+(usos===1?' evaluación la usa.':' evaluaciones la usan.')+'</p>'+
-    '<div class="ver-mat"><div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Texto base · '+contarPalabras(m.fuente||"")+' palabras</h4><div class="ref-txt">'+htmlParrafos(m.fuente)+'</div></div>'+
-    '<div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Resumen de la IA · '+contarPalabras(m.resumen||"")+' palabras</h4><div class="ref-txt">'+htmlParrafos(m.resumen)+'</div></div></div>'+
+    '<div class="ver-mat"><div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Texto base · '+contarPalabras(m.fuente||"")+' palabras</h4><div class="ref-txt">'+htmlRef(m.fuente, subsDe(m,"fuente"), "fuente", false)+'</div></div>'+
+    '<div><h4 style="font-size:12px;color:var(--tinta-3);font-weight:500;margin-bottom:6px">Resumen de la IA · '+contarPalabras(m.resumen||"")+' palabras</h4><div class="ref-txt">'+htmlRef(m.resumen, subsDe(m,"resumen"), "resumen", false)+'</div></div></div>'+
     '<div class="modal-pie"><button class="btn" data-m="usar">Usar en una evaluación nueva</button><button class="btn pri" data-m="cerrar">Cerrar</button></div>');
   v.querySelector(".modal").style.maxWidth="1000px";
   v.addEventListener("click",e=>{
@@ -2167,6 +2325,7 @@ function pedirDesbloqueo(){
         const f=fusionar(E.historial, r.obj.historial, E.borradas, r.obj.borradas);
         E.historial=f.historial; E.borradas=f.borradas; E.sesion=r.ses; E.desbloqueado=true;
         E.materiales=fusionarMateriales(E.materiales, r.obj.materiales, E.borradas);
+        (r.obj.etiquetas||[]).forEach(et=>{ if(!E.etiquetas.some(x=>x.id===et.id)) E.etiquetas.push(et); });
         guardarTodo(); v.remove(); aviso("Historial desbloqueado: "+E.historial.length+" evaluaciones."); if(E.vista==="entrada") pintarEntrada(); res(true);
       }catch(e){
         v.querySelector("#pwMsg").innerHTML='<div class="alerta">'+(e.contrasena?"Esa contraseña no abre este historial.":"No se pudo abrir: "+esc(e.message))+'</div>';
@@ -2213,7 +2372,7 @@ async function guardarHistorial(){
   if(E.cifrado && !E.desbloqueado){ const ok=await pedirDesbloqueo(); if(!ok) return; }
   if(!E.sesion){ const ok=await pedirNuevaContrasena(); if(!ok) return; }
   try{
-    const paquete=await cifrar({v:1, historial:E.historial, borradas:E.borradas, materiales:E.materiales}, E.sesion);
+    const paquete=await cifrar({v:1, historial:E.historial, borradas:E.borradas, materiales:E.materiales, etiquetas:E.etiquetas}, E.sesion);
     const html=construirArchivo(FUENTE, capaPublica(E.historial), paquete);
     descargar(nombreArchivo(), html, "text/html;charset=utf-8");
     const pub=E.historial.filter(x=>x.visibilidad==="publica").length;
@@ -2247,6 +2406,48 @@ function abrirUmbrales(){
       E.prefs.reglas=REGLAS; guardarPrefs(); if(E.ev) pintarPanel();
     }
     v.remove();
+  });
+}
+
+/* ---------- etiquetas de subrayado ---------- */
+function abrirEtiquetas(){
+  const fila=et=>'<div class="et-fila" data-id="'+et.id+'"><input type="text" value="'+esc(et.nom)+'" data-nom aria-label="Nombre de la etiqueta">'+
+    '<span class="et-colores">'+COLORES_ETIQUETA.map(c=>'<button data-color="'+c+'" class="'+(c===et.color?"on":"")+'" style="background:'+c+'" aria-label="Color"></button>').join("")+'</span>'+
+    '<button class="btn mini" data-borrar-et="'+et.id+'">Quitar</button></div>';
+  const usos={};
+  E.materiales.forEach(m=>(m.subrayados||[]).forEach(x=>usos[x.etiqueta]=(usos[x.etiqueta]||0)+1));
+  const v=ventana('<h2>Etiquetas de subrayado</h2><p>Sirven para subrayar el texto base y el resumen de la IA: idea principal, estructura, lo que necesites. Son las mismas para todas las pruebas.</p>'+
+    '<div id="etLista">'+E.etiquetas.map(fila).join("")+'</div>'+
+    '<div class="modal-pie"><button class="btn" data-e="nueva" style="margin-right:auto">+ Nueva etiqueta</button><button class="btn pri" data-e="cerrar">Listo</button></div>');
+  v.addEventListener("click", e=>{
+    const col=e.target.closest("[data-color]");
+    if(col){
+      const f=col.closest(".et-fila"), et=E.etiquetas.find(x=>x.id===f.dataset.id);
+      et.color=col.dataset.color;
+      f.querySelectorAll("[data-color]").forEach(b=>b.classList.toggle("on", b===col));
+      guardarTodo(); pintarReferencia(); return;
+    }
+    const q=e.target.closest("[data-borrar-et]");
+    if(q){
+      const id=q.dataset.borrarEt;
+      if(usos[id] && !confirm("Esa etiqueta tiene "+usos[id]+" subrayado(s). Al quitarla, esos subrayados desaparecen. ¿Continuar?")) return;
+      E.etiquetas=E.etiquetas.filter(x=>x.id!==id);
+      E.materiales.forEach(m=>{ if(m.subrayados) m.subrayados=m.subrayados.filter(x=>x.etiqueta!==id); });
+      guardarTodo(); v.remove(); pintarReferencia(); abrirEtiquetas(); return;
+    }
+    const b=e.target.closest("[data-e]"); if(!b) return;
+    if(b.dataset.e==="nueva"){
+      const color=COLORES_ETIQUETA[E.etiquetas.length%COLORES_ETIQUETA.length];
+      E.etiquetas.push({id:nuevoId("et"), nom:"Nueva etiqueta", color});
+      guardarTodo(); v.remove(); abrirEtiquetas(); return;
+    }
+    v.remove(); pintarReferencia();
+  });
+  v.addEventListener("input", e=>{
+    if(e.target.hasAttribute("data-nom")){
+      const et=E.etiquetas.find(x=>x.id===e.target.closest(".et-fila").dataset.id);
+      if(et){ et.nom=e.target.value; programarGuardado(); }
+    }
   });
 }
 
@@ -2334,7 +2535,20 @@ function enlazar(){
     if(E.detector) aviso(E.sugerencias.length? E.sugerencias.length+" posibles marcadores. Clic para confirmar, clic derecho para descartar." : "No se encontraron marcadores sin marcar."); });
   $("chkNum").addEventListener("change", e=>{ E.prefs.numeros=e.target.checked; guardarPrefs(); pintarLienzo(); });
   $("chkMarcas").addEventListener("change", e=>{ E.prefs.marcas=e.target.checked; guardarPrefs(); pintarLienzo(); });
-  $("bFijar").addEventListener("click", ()=>{ E.palFijada=!E.palFijada; pintarPaleta(); });
+  $("paleta").addEventListener("click", e=>{
+    const b=e.target.closest("[data-pal]"); if(!b) return;
+    if(window.innerWidth<=900){ $("paleta").classList.remove("abierta-movil"); return; }
+    E.prefs.palCerrada = b.dataset.pal==="cerrar"; guardarPrefs(); pintarPaleta();
+  });
+  $("btnPaletaMovil").addEventListener("click", ()=>$("paleta").classList.toggle("abierta-movil"));
+  $("referencia").addEventListener("mouseup", e=>{ if(!e.target.closest(".ref-barra")) setTimeout(()=>alSoltarRef(e),0); });
+  $("referencia").addEventListener("touchend", e=>{ if(!e.target.closest(".ref-barra")) setTimeout(()=>alSoltarRef(e),30); });
+  $("referencia").addEventListener("click", e=>{
+    const et=e.target.closest("[data-et]");
+    if(et){ subrayar(et.dataset.et); return; }
+    if(e.target.closest("[data-et-quitar]")){ quitarSubrayado(); return; }
+    if(e.target.closest("[data-et-editar]")) abrirEtiquetas();
+  });
   $("palCuerpo").addEventListener("mousedown", e=>{ if(e.target.closest("button")) e.preventDefault(); });
   $("palCuerpo").addEventListener("click", e=>{
     const c=e.target.closest("[data-carac]");
@@ -2375,11 +2589,11 @@ function enlazar(){
     const pn=t.closest("[data-panel]");
     if(pn){
       if(pn.dataset.panel==="movil") panel.classList.remove("abierto-movil");
-      else { E.prefs.panelCerrado = pn.dataset.panel==="cerrar"; guardarPrefs(); pintarPanel(); }
+      else { E.prefs.panelCerrado = pn.dataset.panel==="cerrar"; guardarPrefs(); pintarPanel(); ajustarColumnas(); }
       return;
     }
     const ir=t.closest("[data-ir-a]");
-    if(ir){ E.prefs.panelCerrado=false; guardarPrefs(); E.abiertos.add(ir.dataset.irA); pintarPanel(); destacar(ir.dataset.irA); return; }
+    if(ir){ E.prefs.panelCerrado=false; guardarPrefs(); E.abiertos.add(ir.dataset.irA); pintarPanel(); ajustarColumnas(); destacar(ir.dataset.irA); return; }
     const tg=t.closest("[data-toggle]");
     if(tg){ const c=tg.dataset.toggle; E.abiertos.has(c)?E.abiertos.delete(c):E.abiertos.add(c); pintarPanel(); return; }
     const nv=t.closest("[data-n]");
@@ -2449,7 +2663,7 @@ function enlazar(){
     if(E.popIds && !e.target.closest("#pop") && !e.target.closest("[data-m]") && !e.target.closest("[data-evid]")) cerrarPop();
   });
   window.addEventListener("beforeunload", guardarTodo);
-  window.addEventListener("resize", ()=>{ if(E.vista==="eval") pintarPanel(); });
+  window.addEventListener("resize", ()=>{ if(E.vista==="eval"){ pintarPanel(); pintarPaleta(); } });
 }
 
 /* ---------- arranque ---------- */
@@ -2462,6 +2676,7 @@ function iniciar(){
   E.historial=ALM.leer("historial", []);
   E.borradas=ALM.leer("borradas", []);
   E.materiales=ALM.leer("materiales", []);
+  E.etiquetas=ALM.leer("etiquetas", null) || JSON.parse(JSON.stringify(ETIQUETAS_BASE));
   E.publicos=leerBloque("datos-publicos")||[];
   E.cifrado=leerBloque("datos-cifrados");
   enlazar();
